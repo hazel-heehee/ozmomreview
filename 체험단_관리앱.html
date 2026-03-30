@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>체험단 관리 시스템</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F4F0;
+    --surface: #FFFFFF;
+    --primary: #2D4A8A;
+    --primary-light: #EEF2FB;
+    --accent: #E85D4A;
+    --accent-soft: #FEF0EE;
+    --gold: #C9A84C;
+    --gold-soft: #FBF6EA;
+    --green: #3A8A5E;
+    --green-soft: #EDF5F0;
+    --text: #1A1A2E;
+    --text-mid: #555577;
+    --text-soft: #9090A8;
+    --border: #E4E4EF;
+    --shadow: 0 2px 16px rgba(45,74,138,0.08);
+    --radius: 14px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--primary);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(45,74,138,0.25);
+  }
+  .header-logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.3px;
+  }
+  .header-logo span {
+    background: var(--accent);
+    color: #fff;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4CAF50;
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+  }
+
+  /* TABS */
+  .tab-nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 32px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab-nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 16px 20px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-soft);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Noto Sans KR', sans-serif;
+    position: relative;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 700;
+  }
+  .tab-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tab-btn.active .tab-num {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 28px 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* PAGE HEADER */
+  .page-header {
+    margin-bottom: 24px;
+  }
+  .page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .page-desc {
+    font-size: 13.5px;
+    color: var(--text-mid);
+    line-height: 1.6;
+  }
+
+  /* SETUP BANNER */
+  .setup-banner {
+    background: linear-gradient(135deg, #FFF8E7 0%, #FFF3D4 100%);
+    border: 1px solid #F0D080;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .setup-banner .icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .setup-banner strong { font-size: 13px; color: #7A5C00; }
+  .setup-banner p { font-size: 12.5px; color: #9A7A20; margin-top: 3px; line-height: 1.5; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  /* FORM ELEMENTS */
+  .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .form-label { font-size: 12.5px; font-weight: 600; color: var(--text-mid); }
+  .form-input {
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text);
+    transition: border-color 0.2s;
+    background: #FAFAFA;
+  }
+  .form-input:focus { outline: none; border-color: var(--primary); background: #fff; }
+  .form-input::placeholder { color: var(--text-soft); }
+
+  /* BUTTONS */
+  .btn {
+    padding: 10px 20px;
+    border-radius: 9px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #1e3a7a; transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  .btn-secondary:hover { background: #dce8ff; }
+  .btn-danger { background: var(--accent-soft); color: var(--accent); }
+  .btn-danger:hover { background: #fdddd9; }
+  .btn-success { background: var(--green-soft); color: var(--green); }
+  .btn-success:hover { background: #d8f0e3; }
+  .btn-gold { background: var(--gold-soft); color: #8A6A00; }
+  .btn-gold:hover { background: #f5ead4; }
+  .btn-sm { padding: 7px 13px; font-size: 12px; }
+  .btn-lg { padding: 13px 26px; font-size: 15px; }
+  .btn-block { width: 100%; justify-content: center; }
+
+  /* PRODUCT TABLE */
+  .product-table-wrap { overflow-x: auto; }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .data-table th {
+    background: var(--bg);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-mid);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--bg); }
+  .link-text {
+    color: var(--primary);
+    font-size: 12px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+  }
+  .img-thumb {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .img-placeholder {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    background: var(--primary-light);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--primary);
+    font-size: 18px;
+    border: 1px dashed var(--primary);
+  }
+
+  /* STATUS BADGE */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .badge-blue { background: var(--primary-light); color: var(--primary); }
+  .badge-red { background: var(--accent-soft); color: var(--accent); }
+  .badge-green { background: var(--green-soft); color: var(--green); }
+  .badge-gold { background: var(--gold-soft); color: #8A6A00; }
+  .badge-gray { background: #F0F0F5; color: var(--text-soft); }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* STAT BOX */
+  .stat-box {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-num { font-size: 32px; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
+  .stat-label { font-size: 12.5px; color: var(--text-mid); margin-top: 4px; font-weight: 500; }
+
+  /* PROGRESS */
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--primary);
+    transition: width 0.5s ease;
+  }
+
+  /* MESSAGE BOX */
+  .msg-box {
+    background: #F8FAF5;
+    border: 1px solid #D0E8C0;
+    border-radius: var(--radius);
+    padding: 18px;
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .msg-box .var-tag {
+    background: var(--primary);
+    color: #fff;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    display: inline-block;
+    margin: 0 1px;
+  }
+
+  /* OMIT LIST */
+  .omg-tag {
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* REVIEW TABLE */
+  .late-row td { color: var(--accent); }
+  .late-badge {
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+
+  /* CHECK ICONS */
+  .check-ok { color: var(--green); font-size: 16px; }
+  .check-no { color: var(--text-soft); font-size: 16px; }
+  .check-late { color: var(--accent); font-size: 16px; }
+
+  /* STEP GUIDE */
+  .step-guide {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .step-guide-header {
+    background: var(--primary);
+    color: #fff;
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-circle {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-circle.done { background: var(--green); }
+  .step-circle.todo { background: var(--text-soft); }
+  .step-title { font-size: 13.5px; font-weight: 700; margin-bottom: 4px; }
+  .step-desc { font-size: 12.5px; color: var(--text-mid); line-height: 1.6; }
+  .step-desc a { color: var(--primary); text-decoration: none; }
+  .step-desc a:hover { text-decoration: underline; }
+
+  /* TAB 5 */
+  .payback-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    .content { padding: 16px; }
+    .two-col { grid-template-columns: 1fr; }
+    .three-col { grid-template-columns: 1fr; }
+    .payback-form-row { grid-template-columns: 1fr 1fr; }
+    .form-row { flex-direction: column; }
+    .tab-btn { padding: 12px 14px; font-size: 12px; }
+  }
+
+  /* SOLAPI WAITING */
+  .notice-box {
+    background: #FFF8E1;
+    border: 1.5px dashed #FFC107;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .notice-box .nt-icon { font-size: 20px; flex-shrink: 0; }
+  .notice-box .nt-text strong { font-size: 13px; color: #6D4C00; }
+  .notice-box .nt-text p { font-size: 12.5px; color: #9A7A20; margin-top: 4px; line-height: 1.5; }
+
+  textarea.form-input {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.6;
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag-item {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tag-item:hover { background: var(--primary); color: #fff; }
+  .tag-item.omg {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .tag-item.omg:hover { background: var(--accent); color: #fff; }
+
+  .floating-actions {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 50;
+  }
+
+  .tooltip {
+    position: relative;
+    display: inline-flex;
+  }
+  .tooltip-text {
+    visibility: hidden;
+    background: #1A1A2E;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+  .tooltip:hover .tooltip-text { visibility: visible; }
+
+  .api-config-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+
+  .form-section {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .form-section-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    ✨ 체험단 관리 시스템
+    <span>BETA</span>
+  </div>
+  <div class="header-right">
+    <span class="status-dot"></span>
+    시스템 운영 중
+  </div>
+</div>
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab(0)">
+    <div class="tab-num">1</div>
+    📋 설문지 자동생성
+  </button>
+  <button class="tab-btn" onclick="switchTab(1)">
+    <div class="tab-num">2</div>
+    🎯 체험단 선정
+  </button>
+  <button class="tab-btn" onclick="switchTab(2)">
+    <div class="tab-num">3</div>
+    📨 문자 발송
+  </button>
+  <button class="tab-btn" onclick="switchTab(3)">
+    <div class="tab-num">4</div>
+    ✅ 후기 확인
+  </button>
+  <button class="tab-btn" onclick="switchTab(4)">
+    <div class="tab-num">5</div>
+    💰 페이백 등록
+  </button>
+</div>
+
+<!-- CONTENT AREA -->
+<div class="content">
+
+  <!-- ======================== TAB 1: 설문지 자동생성 ======================== -->
+  <div class="tab-content active" id="tab0">
+    <div class="page-header">
+      <div class="page-title">📋 제품 설문지 자동 만들기</div>
+      <div class="page-desc">쿠팡 링크와 제품명을 등록하면 → 이미지 추출 → 구글 폼 자동 생성까지 한 번에!</div>
+    </div>
+
+    <div class="setup-banner">
+      <div class="icon">⚙️</div>
+      <div>
+        <strong>최초 1회 Google API 연결이 필요합니다</strong>
+        <p>아래 가이드 탭에서 단계별 설정 방법을 확인하세요. Google Forms API 키와 Sheets API 키가 필요합니다.</p>
+      </div>
+    </div>
+
+    <!-- Google API 설정 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">🔑</div>
+        Google API 설정 (최초 1회)
+      </div>
+      <div class="api-config-row">
+        <div class="form-group">
+          <div class="form-label">Google Forms API 키</div>
+          <input class="form-input" type="password" placeholder="AIzaSy..." id="googleApiKey">
+        </div>
+        <div class="form-group">
+          <div class="form-label">스프레드시트 ID</div>
+          <input class="form-input" type="text" placeholder="구글 시트 주소의 /d/.../ 사이 값" id="sheetId">
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="saveApiConfig()">💾 저장하기</button>
+    </div>
+
+    <!-- 제품 등록 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">📦</div>
+        제품 등록
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">새 제품 추가</div>
+        <div class="form-row">
+          <div class="form-group" style="flex:1">
+            <div class="form-label">제품명</div>
+            <input class="form-input" type="text" placeholder="예) 세트-슈가체르" id="newProductName">
+          </div>
+          <div class="form-group" style="flex:2">
+            <div class="form-label">쿠팡 링크</div>
+            <input class="form-input" type="url" placeholder="https://www.coupang.com/vp/products/..." id="newProductLink">
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn btn-primary" onclick="addProduct()">+ 추가</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 제품 테이블 -->
+      <div class="product-table-wrap">
+        <table class="data-table" id="productTable">
+          <thead>
+            <tr>
+              <th>이미지</th>
+              <th>제품명</th>
+              <th>쿠팡 링크</th>
+              <th>상태</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="productTableBody">
+            <tr>
+              <td><div class="img-placeholder">📦</div></td>
+              <td><strong>세트-슈가체르</strong></td>
+              <td><a class="link-text" href="#">https://www.coupang.com/vp/products/9...</a></td>
+              <td><span class="badge badge-green">✅ 이미지 추출됨</span></td>
+              <td><button class="btn btn-danger btn-sm" onclick="deleteRow(this)">삭제</button></td>
+            </tr>
+            <tr>
+              <td><div class="img-placeholder">📦</div></td>
+              <td><strong>세트-리본모란트</strong></td>
+              <td><a class="link-text" href="#">https://www.coupang.com/vp/products/9...</a></td>
+              <td><span class="badge badge-gold">⏳ 이미지 추출중</span></td>
+              <td><button class="btn btn-danger btn-sm" onclick="deleteRow(this)">삭제</button></td>
+            </tr>
+            <tr>
+              <td><div class="img-placeholder">📦</div></td>
+              <td><strong>세트-몽글하트</strong></td>
+              <td><a class="link-text" href="#">https://www.coupang.com/vp/products/9...</a></td>
+              <td><span class="badge badge-blue">🔗 링크 등록됨</span></td>
+              <td><button class="btn btn-danger btn-sm" onclick="deleteRow(this)">삭제</button></td>
+            </tr>
+            <tr>
+              <td><div class="img-placeholder">📦</div></td>
+              <td><strong>하이-퐁퐁리본</strong></td>
+              <td><a class="link-text" href="#">https://www.coupang.com/vp/products/9...</a></td>
+              <td><span class="badge badge-green">✅ 이미지 추출됨</span></td>
+              <td><button class="btn btn-danger btn-sm" onclick="deleteRow(this)">삭제</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 설문지 생성 옵션 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">📝</div>
+        설문지 생성 옵션
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">설문지 기본 포함 항목 (자동)</div>
+        <div class="tag-list">
+          <div class="tag-item">제품명</div>
+          <div class="tag-item">제품 이미지</div>
+          <div class="tag-item">성함 (필수)</div>
+          <div class="tag-item">전화번호 (000-0000-0000)</div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <div class="form-label">추가 안내 문구 (설문지 상단에 표시)</div>
+        <textarea class="form-input" placeholder="예) 본 설문은 체험단 선정을 위한 것으로, 허위 정보 작성 시 선정에서 제외될 수 있습니다.">안녕하세요! 체험단 신청 설문지입니다.
+아래 제품을 꼼꼼히 확인 후 신청해 주세요.
+선정 결과는 개별 문자로 안내드립니다.</textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">신청 마감일</div>
+          <input class="form-input" type="date" id="deadline">
+        </div>
+        <div class="form-group">
+          <div class="form-label">후기 제출 마감일</div>
+          <input class="form-input" type="date" id="reviewDeadline">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-lg" onclick="createForm()">🚀 구글 폼 자동 생성하기</button>
+        <button class="btn btn-secondary" onclick="previewForm()">👁️ 미리보기</button>
+      </div>
+    </div>
+
+    <!-- 생성된 폼 목록 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">📂</div>
+        최근 생성된 설문지
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th>생성일</th><th>설문지 제목</th><th>마감일</th><th>응답수</th><th>링크</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2025.03.20</td>
+            <td>3월 4차 체험단 신청</td>
+            <td>2025.03.25</td>
+            <td><span class="badge badge-green">47명</span></td>
+            <td><a class="link-text" href="#">📋 폼 열기</a></td>
+          </tr>
+          <tr>
+            <td>2025.03.10</td>
+            <td>3월 3차 체험단 신청</td>
+            <td>2025.03.15</td>
+            <td><span class="badge badge-green">62명</span></td>
+            <td><a class="link-text" href="#">📋 폼 열기</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================== TAB 2: 체험단 선정 ======================== -->
+  <div class="tab-content" id="tab1">
+    <div class="page-header">
+      <div class="page-title">🎯 체험단 선정</div>
+      <div class="page-desc">최근 2개월 내 선정자 자동 제외 · OMG 리스트 관리 · 조건별 선정</div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="three-col" style="margin-bottom:20px">
+      <div class="stat-box">
+        <div class="stat-num">47</div>
+        <div class="stat-label">총 신청자</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color:var(--accent)">12</div>
+        <div class="stat-label">제외 대상자</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:25%;background:var(--accent)"></div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color:var(--green)">35</div>
+        <div class="stat-label">선정 가능 인원</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:74%;background:var(--green)"></div></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- 선정 조건 -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">⚙️</div>
+          선정 조건 설정
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <div class="form-label">선정 인원 수</div>
+          <input class="form-input" type="number" value="20" placeholder="명">
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <div class="form-label">제외 기간</div>
+          <select class="form-input">
+            <option>최근 2개월 이내 선정자 제외</option>
+            <option>최근 1개월 이내 선정자 제외</option>
+            <option>최근 3개월 이내 선정자 제외</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <div class="form-label">선정 방식</div>
+          <select class="form-input">
+            <option>무작위 추첨</option>
+            <option>먼저 신청한 순서</option>
+            <option>후기 미작성 이력 없는 분 우선</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="selectMembers()">🎲 자동 선정하기</button>
+      </div>
+
+      <!-- OMG 리스트 관리 -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">🚫</div>
+          OMG 리스트 (마감 미준수자)
+        </div>
+        <div style="font-size:12.5px;color:var(--text-mid);margin-bottom:12px;line-height:1.6">
+          2회 이상 마감일을 초과한 분들이 자동으로 등록됩니다. OMG 리스트에 있는 분들은 선정에서 제외됩니다.
+        </div>
+        <div class="tag-list" id="omgList">
+          <div class="tag-item omg" onclick="removeOMG(this)">김○○ <small>×</small></div>
+          <div class="tag-item omg" onclick="removeOMG(this)">이○○ <small>×</small></div>
+          <div class="tag-item omg" onclick="removeOMG(this)">박○○ <small>×</small></div>
+        </div>
+        <hr class="divider">
+        <div class="form-row" style="align-items:flex-end">
+          <div class="form-group">
+            <div class="form-label">직접 추가</div>
+            <input class="form-input" type="text" placeholder="이름" id="omgNameInput">
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="addOMG()">+ 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 선정 결과 테이블 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">🏆</div>
+        선정 결과
+        <span class="badge badge-green" style="margin-left:auto">20명 선정</span>
+      </div>
+      <div class="product-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>성함</th>
+              <th>전화번호</th>
+              <th>신청 제품</th>
+              <th>최근 선정</th>
+              <th>후기 준수율</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><strong>홍○○</strong></td>
+              <td>010-1234-5678</td>
+              <td>세트-슈가체르</td>
+              <td>없음</td>
+              <td><span class="badge badge-green">100%</span></td>
+              <td><span class="badge badge-green">✅ 선정</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><strong>최○○</strong></td>
+              <td>010-2345-6789</td>
+              <td>세트-리본모란트</td>
+              <td>없음</td>
+              <td><span class="badge badge-green">100%</span></td>
+              <td><span class="badge badge-green">✅ 선정</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><strong>정○○</strong></td>
+              <td>010-3456-7890</td>
+              <td>세트-몽글하트</td>
+              <td>없음</td>
+              <td><span class="badge badge-gold">75%</span></td>
+              <td><span class="badge badge-green">✅ 선정</span></td>
+            </tr>
+            <tr style="opacity:0.5">
+              <td>-</td>
+              <td><strong>이○○</strong></td>
+              <td>010-0000-0000</td>
+              <td>하이-퐁퐁리본</td>
+              <td>1개월 전</td>
+              <td><span class="badge badge-gray">-</span></td>
+              <td><span class="badge badge-gray">⛔ 2개월 제외</span></td>
+            </tr>
+            <tr style="opacity:0.5">
+              <td>-</td>
+              <td><strong>박○○</strong></td>
+              <td>010-1111-2222</td>
+              <td>세트-슈가체르</td>
+              <td>2개월 전</td>
+              <td><span class="badge badge-red">40%</span></td>
+              <td><span class="badge badge-red">🚫 OMG</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="goToTab(2)">📨 3단계: 문자 발송으로 이동 →</button>
+        <button class="btn btn-secondary">📥 엑셀 다운로드</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== TAB 3: 문자 발송 ======================== -->
+  <div class="tab-content" id="tab2">
+    <div class="page-header">
+      <div class="page-title">📨 솔라피 문자 / 알림톡 발송</div>
+      <div class="page-desc">선정된 체험단에게 선정 안내 메시지를 발송합니다</div>
+    </div>
+
+    <div class="notice-box">
+      <div class="nt-icon">⏳</div>
+      <div class="nt-text">
+        <strong>알림톡 검수 중</strong>
+        <p>솔라피 카카오 알림톡 내용이 검수 중입니다. 검수 완료 후 알림톡으로 발송됩니다. 그 전까지는 일반 SMS/LMS로 발송됩니다.</p>
+      </div>
+    </div>
+
+    <!-- 솔라피 API 설정 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">🔑</div>
+        솔라피 API 설정 (최초 1회)
+      </div>
+      <div class="api-config-row">
+        <div class="form-group">
+          <div class="form-label">솔라피 API Key</div>
+          <input class="form-input" type="password" placeholder="NCSSOLO...">
+        </div>
+        <div class="form-group">
+          <div class="form-label">솔라피 API Secret</div>
+          <input class="form-input" type="password" placeholder="API Secret 입력">
+        </div>
+        <div class="form-group">
+          <div class="form-label">발신 번호</div>
+          <input class="form-input" type="text" placeholder="010-0000-0000">
+        </div>
+        <div class="form-group" style="align-self:flex-end">
+          <button class="btn btn-secondary btn-sm" onclick="saveSolapiConfig()">💾 저장</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- 메시지 템플릿 -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">✏️</div>
+          메시지 내용
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <div class="form-label">발송 유형</div>
+          <select class="form-input">
+            <option>일반 SMS (검수 전 - 현재)</option>
+            <option>카카오 알림톡 (검수 완료 후)</option>
+            <option>LMS (장문)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <div class="form-label">메시지 내용</div>
+          <div class="msg-box">
+            안녕하세요 <span class="var-tag">{성함}</span>님! 🎉<br><br>
+            <span class="var-tag">{제품명}</span> 체험단으로 선정되셨습니다.<br><br>
+            📦 제품은 <span class="var-tag">{발송예정일}</span> 발송 예정입니다.<br>
+            📝 후기 마감일: <span class="var-tag">{마감일}</span><br><br>
+            후기 제출 방법은 별도 안내 드립니다.<br>
+            감사합니다 ☺️
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="badge badge-blue">변수: {성함}</span>
+          <span class="badge badge-blue">변수: {제품명}</span>
+          <span class="badge badge-blue">변수: {마감일}</span>
+          <span class="badge badge-blue">변수: {발송예정일}</span>
+        </div>
+      </div>
+
+      <!-- 발송 대상 -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">👥</div>
+          발송 대상
+          <span class="badge badge-green" style="margin-left:auto">20명</span>
+        </div>
+        <div style="font-size:13px;color:var(--text-mid);margin-bottom:12px">
+          2단계에서 선정된 체험단 자동 불러오기 완료
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <div class="form-label">발송 예정일</div>
+          <input class="form-input" type="date" id="sendDate">
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <div class="form-label">후기 마감일</div>
+          <input class="form-input" type="date" id="msgReviewDeadline">
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <div class="form-label">예약 발송 시간</div>
+          <input class="form-input" type="time" value="10:00">
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="sendMessages()">
+          📨 지금 발송하기
+        </button>
+        <button class="btn btn-secondary btn-block" style="margin-top:8px">
+          🕐 예약 발송
+        </button>
+      </div>
+    </div>
+
+    <!-- 발송 내역 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">📊</div>
+        발송 내역
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th>발송일시</th><th>대상</th><th>성함</th><th>제품</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>03.20 10:02</td>
+            <td>010-1234-5678</td>
+            <td>홍○○</td>
+            <td>세트-슈가체르</td>
+            <td><span class="badge badge-green">✅ 발송완료</span></td>
+          </tr>
+          <tr>
+            <td>03.20 10:02</td>
+            <td>010-2345-6789</td>
+            <td>최○○</td>
+            <td>세트-리본모란트</td>
+            <td><span class="badge badge-green">✅ 발송완료</span></td>
+          </tr>
+          <tr>
+            <td>03.20 10:02</td>
+            <td>010-3456-7890</td>
+            <td>정○○</td>
+            <td>세트-몽글하트</td>
+            <td><span class="badge badge-red">❌ 실패</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================== TAB 4: 후기 확인 ======================== -->
+  <div class="tab-content" id="tab3">
+    <div class="page-header">
+      <div class="page-title">✅ 후기 확인 체크</div>
+      <div class="page-desc">자사몰 · 몰 후기 · SNS 후기를 한눈에 확인하고, 마감 미준수자를 자동 표시합니다</div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="three-col" style="margin-bottom:20px">
+      <div class="stat-box">
+        <div class="stat-num" style="color:var(--green)">13</div>
+        <div class="stat-label">후기 제출 완료</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color:var(--gold)">4</div>
+        <div class="stat-label">제출 중 / 확인 필요</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color:var(--accent)">3</div>
+        <div class="stat-label">⚠️ 마감일 미준수</div>
+      </div>
+    </div>
+
+    <!-- 필터 -->
+    <div class="card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:13px;font-weight:600;color:var(--text-mid)">필터:</span>
+        <button class="btn btn-primary btn-sm">전체</button>
+        <button class="btn btn-secondary btn-sm">완료</button>
+        <button class="btn btn-gold btn-sm">미완료</button>
+        <button class="btn btn-danger btn-sm">⚠️ 마감 미준수</button>
+        <div style="margin-left:auto">
+          <input class="form-input" type="text" placeholder="이름 검색..." style="width:160px;font-size:12.5px;padding:7px 12px">
+        </div>
+      </div>
+    </div>
+
+    <!-- 후기 테이블 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">📋</div>
+        후기 현황표
+        <button class="btn btn-secondary btn-sm" style="margin-left:auto" onclick="refreshReviews()">🔄 스프레드시트 동기화</button>
+      </div>
+      <div class="product-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>성함</th>
+              <th>제품</th>
+              <th>마감일</th>
+              <th>자사몰 후기</th>
+              <th>몰 후기</th>
+              <th>SNS 후기</th>
+              <th>전체 현황</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>홍○○</strong></td>
+              <td>세트-슈가체르</td>
+              <td>03.27</td>
+              <td class="check-ok">✅</td>
+              <td class="check-ok">✅</td>
+              <td class="check-ok">✅</td>
+              <td><span class="badge badge-green">완료</span></td>
+            </tr>
+            <tr>
+              <td><strong>최○○</strong></td>
+              <td>세트-리본모란트</td>
+              <td>03.27</td>
+              <td class="check-ok">✅</td>
+              <td class="check-no">○</td>
+              <td class="check-ok">✅</td>
+              <td><span class="badge badge-gold">진행중</span></td>
+            </tr>
+            <tr class="late-row">
+              <td>
+                <strong>박○○</strong>
+                <span class="late-badge">마감일미준수</span>
+              </td>
+              <td>세트-몽글하트</td>
+              <td style="color:var(--accent)"><strong>03.20 ⚠️</strong></td>
+              <td class="check-no">○</td>
+              <td class="check-no">○</td>
+              <td class="check-no">○</td>
+              <td><span class="badge badge-red">미제출</span></td>
+            </tr>
+            <tr class="late-row">
+              <td>
+                <strong>정○○</strong>
+                <span class="late-badge">마감일미준수</span>
+              </td>
+              <td>하이-퐁퐁리본</td>
+              <td style="color:var(--accent)"><strong>03.22 ⚠️</strong></td>
+              <td class="check-ok">✅</td>
+              <td class="check-no">○</td>
+              <td class="check-no">○</td>
+              <td><span class="badge badge-red">일부 미제출</span></td>
+            </tr>
+            <tr>
+              <td><strong>김○○</strong></td>
+              <td>세트-슈가체르</td>
+              <td>03.27</td>
+              <td class="check-ok">✅</td>
+              <td class="check-ok">✅</td>
+              <td class="check-ok">✅</td>
+              <td><span class="badge badge-green">완료</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+        <button class="btn btn-danger btn-sm" onclick="addToOMG()">🚫 마감 미준수자 → OMG 리스트 추가</button>
+        <button class="btn btn-secondary btn-sm">📥 현황표 엑셀 다운로드</button>
+        <button class="btn btn-gold btn-sm" onclick="goToTab(4)">💰 5단계: 페이백 등록으로 이동 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== TAB 5: 페이백 ======================== -->
+  <div class="tab-content" id="tab4">
+    <div class="page-header">
+      <div class="page-title">💰 페이백 하이웍스 등록</div>
+      <div class="page-desc">후기 완료된 체험단의 페이백 정보를 하이웍스에 자동 등록합니다</div>
+    </div>
+
+    <!-- 하이웍스 설정 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">🔑</div>
+        하이웍스 계정 설정 (최초 1회)
+      </div>
+      <div class="api-config-row">
+        <div class="form-group">
+          <div class="form-label">하이웍스 아이디</div>
+          <input class="form-input" type="text" placeholder="하이웍스 로그인 ID">
+        </div>
+        <div class="form-group">
+          <div class="form-label">비밀번호</div>
+          <input class="form-input" type="password" placeholder="비밀번호">
+        </div>
+        <div class="form-group">
+          <div class="form-label">회사 코드</div>
+          <input class="form-input" type="text" placeholder="회사 코드">
+        </div>
+        <div class="form-group" style="align-self:flex-end">
+          <button class="btn btn-secondary btn-sm">💾 저장 & 연결</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 페이백 등록 양식 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">📝</div>
+        페이백 정보 입력
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">페이백 기본 설정</div>
+        <div class="payback-form-row">
+          <div class="form-group">
+            <div class="form-label">회차명</div>
+            <input class="form-input" type="text" placeholder="예) 3월 4차 체험단">
+          </div>
+          <div class="form-group">
+            <div class="form-label">페이백 금액 (1인당)</div>
+            <input class="form-input" type="number" placeholder="예) 10000">
+          </div>
+          <div class="form-group">
+            <div class="form-label">지급 예정일</div>
+            <input class="form-input" type="date">
+          </div>
+        </div>
+      </div>
+
+      <!-- 대상자 목록 -->
+      <div class="card-title" style="margin-top:4px">
+        <div class="card-title-icon">✅</div>
+        후기 완료 대상자 (페이백 대상)
+      </div>
+      <table class="data-table" style="margin-bottom:16px">
+        <thead>
+          <tr>
+            <th><input type="checkbox" onchange="toggleAll(this)"></th>
+            <th>성함</th>
+            <th>전화번호</th>
+            <th>제품</th>
+            <th>후기 완료</th>
+            <th>페이백 금액</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox" checked></td>
+            <td><strong>홍○○</strong></td>
+            <td>010-1234-5678</td>
+            <td>세트-슈가체르</td>
+            <td><span class="badge badge-green">✅ 완료</span></td>
+            <td><strong>10,000원</strong></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked></td>
+            <td><strong>김○○</strong></td>
+            <td>010-5678-9012</td>
+            <td>세트-슈가체르</td>
+            <td><span class="badge badge-green">✅ 완료</span></td>
+            <td><strong>10,000원</strong></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>최○○</strong></td>
+            <td>010-2345-6789</td>
+            <td>세트-리본모란트</td>
+            <td><span class="badge badge-gold">진행중</span></td>
+            <td style="color:var(--text-soft)">-</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="background:var(--primary-light);border-radius:10px;padding:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13.5px;color:var(--primary);font-weight:600">총 지급 예정액</span>
+        <span style="font-size:22px;font-weight:900;color:var(--primary)">20,000원</span>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-lg" onclick="uploadPayback()">📤 하이웍스에 등록하기</button>
+        <button class="btn btn-secondary">👁️ 미리보기</button>
+        <button class="btn btn-gold">📥 엑셀로 내보내기</button>
+      </div>
+    </div>
+
+    <!-- 등록 내역 -->
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">📊</div>
+        페이백 등록 내역
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th>등록일</th><th>회차</th><th>대상 인원</th><th>총 금액</th><th>상태</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2025.03.28</td>
+            <td>3월 3차</td>
+            <td>18명</td>
+            <td>180,000원</td>
+            <td><span class="badge badge-green">✅ 지급완료</span></td>
+          </tr>
+          <tr>
+            <td>2025.03.15</td>
+            <td>3월 2차</td>
+            <td>20명</td>
+            <td>200,000원</td>
+            <td><span class="badge badge-blue">💰 처리중</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- ALERT MODAL -->
+<div id="alertModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:28px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <div id="alertIcon" style="font-size:40px;text-align:center;margin-bottom:12px">✅</div>
+    <div id="alertTitle" style="font-size:17px;font-weight:700;text-align:center;margin-bottom:8px"></div>
+    <div id="alertMsg" style="font-size:13.5px;color:var(--text-mid);text-align:center;line-height:1.6;margin-bottom:20px"></div>
+    <button class="btn btn-primary btn-block" onclick="closeAlert()">확인</button>
+  </div>
+</div>
+
+<script>
+function switchTab(n) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===n));
+  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', i===n));
+}
+function goToTab(n) { switchTab(n); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function showAlert(icon, title, msg) {
+  document.getElementById('alertIcon').textContent = icon;
+  document.getElementById('alertTitle').textContent = title;
+  document.getElementById('alertMsg').textContent = msg;
+  document.getElementById('alertModal').style.display = 'flex';
+}
+function closeAlert() { document.getElementById('alertModal').style.display = 'none'; }
+
+function addProduct() {
+  const name = document.getElementById('newProductName').value.trim();
+  const link = document.getElementById('newProductLink').value.trim();
+  if (!name || !link) { showAlert('⚠️','입력 필요','제품명과 링크를 모두 입력해주세요.'); return; }
+  const tbody = document.getElementById('productTableBody');
+  const row = `<tr>
+    <td><div class="img-placeholder">📦</div></td>
+    <td><strong>${name}</strong></td>
+    <td><a class="link-text" href="${link}" target="_blank">${link.substring(0,40)}...</a></td>
+    <td><span class="badge badge-gold">⏳ 이미지 추출중</span></td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteRow(this)">삭제</button></td>
+  </tr>`;
+  tbody.insertAdjacentHTML('beforeend', row);
+  document.getElementById('newProductName').value = '';
+  document.getElementById('newProductLink').value = '';
+  showAlert('✅','등록 완료!',`"${name}" 제품이 추가되었습니다. 실제 연동 시 이미지가 자동 추출됩니다.`);
+}
+
+function deleteRow(btn) { btn.closest('tr').remove(); }
+
+function createForm() {
+  showAlert('🚀','구글 폼 생성 중!','Google Forms API 연결 후 실제로 작동합니다.\n아래 "처음부터 할 일" 가이드를 참고해주세요!');
+}
+function previewForm() { showAlert('👁️','미리보기','실제 구글 폼 링크가 여기 표시됩니다.'); }
+function saveApiConfig() { showAlert('💾','저장됨','API 설정이 저장되었습니다. (실제 배포 후 작동)'); }
+function saveSolapiConfig() { showAlert('💾','저장됨','솔라피 설정이 저장되었습니다.'); }
+function selectMembers() { showAlert('🎲','자동 선정 완료!','20명이 선정되었습니다. OMG 리스트 및 2개월 내 선정자는 자동 제외되었습니다.'); }
+function sendMessages() { showAlert('📨','발송 예약됨!','20명에게 메시지 발송을 시작합니다. 솔라피 API 연결 후 실제 발송됩니다.'); }
+function refreshReviews() { showAlert('🔄','동기화 완료!','구글 스프레드시트에서 최신 응답을 불러왔습니다.'); }
+function addToOMG() { showAlert('🚫','OMG 추가됨!','마감일 미준수자 2명이 OMG 리스트에 추가되었습니다. 다음 선정 시 자동 제외됩니다.'); }
+function uploadPayback() { showAlert('📤','하이웍스 등록!','선택된 2명의 페이백 정보를 하이웍스에 등록합니다. 하이웍스 API 연결 후 실제 작동됩니다.'); }
+
+function addOMG() {
+  const name = document.getElementById('omgNameInput').value.trim();
+  if (!name) return;
+  const list = document.getElementById('omgList');
+  const tag = document.createElement('div');
+  tag.className = 'tag-item omg';
+  tag.innerHTML = `${name} <small>×</small>`;
+  tag.onclick = function() { removeOMG(this); };
+  list.appendChild(tag);
+  document.getElementById('omgNameInput').value = '';
+}
+function removeOMG(el) {
+  if (confirm(`"${el.textContent.trim()}"을 OMG 리스트에서 제거할까요?`)) el.remove();
+}
+function toggleAll(cb) {
+  document.querySelectorAll('#tab4 input[type=checkbox]').forEach(c => c.checked = cb.checked);
+}
+
+// Set today's date defaults
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+  document.querySelectorAll('input[type=date]').forEach(el => { if (!el.value) el.value = todayStr; });
+});
+</script>
+</body>
+</html>
