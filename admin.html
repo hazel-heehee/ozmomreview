@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OZKIZ 관리자</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--red:#E24B4A;--rl:#FFF0F0;--g50:#FAFAFA;--g100:#F5F5F5;--g200:#EEEEEE;--g300:#E0E0E0;--g400:#BDBDBD;--g500:#9E9E9E;--g600:#757575;--g700:#424242;--g800:#212121;--side:220px;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:var(--g100);color:var(--g800);display:flex;min-height:100vh;}
+.sidebar{width:var(--side);background:#fff;border-right:1px solid var(--g200);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+.sidebar-logo{padding:18px 18px 14px;border-bottom:1px solid var(--g100);}
+.logo-icon{width:30px;height:30px;border-radius:8px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;}
+.logo-text{font-size:14px;font-weight:800;color:var(--g800);}
+.logo-sub{font-size:10px;color:var(--g500);margin-top:1px;}
+.sidebar-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;}
+.nav-group-label{font-size:10px;font-weight:700;color:var(--g400);letter-spacing:.08em;padding:8px 10px 3px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--g600);transition:all .15s;}
+.nav-item:hover{background:var(--g100);color:var(--g800);}
+.nav-item.active{background:var(--rl);color:var(--red);font-weight:700;}
+.nav-icon{font-size:13px;flex-shrink:0;width:18px;text-align:center;}
+.sidebar-footer{padding:10px;border-top:1px solid var(--g100);}
+.admin-av{width:28px;height:28px;border-radius:50%;background:var(--g800);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.main{margin-left:var(--side);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.page{display:none;flex-direction:column;flex:1;min-height:100vh;}
+.page.active{display:flex;}
+.topbar{background:#fff;border-bottom:1px solid var(--g200);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-size:15px;font-weight:700;color:var(--g800);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--red);color:#fff;}
+.btn-primary:hover{background:#C73938;}
+.btn-outline{background:#fff;border:1px solid var(--g300);color:var(--g700);}
+.btn-outline:hover{background:var(--g50);}
+.btn-green{background:#2E7D32;color:#fff;}
+.btn-green:hover{background:#1B5E20;}
+.btn-blue{background:#1565C0;color:#fff;}
+.btn-blue:hover{background:#0D47A1;}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:7px;}
+.btn-lg{padding:10px 20px;font-size:13px;}
+.content{padding:20px 24px;display:flex;flex-direction:column;gap:16px;flex:1;}
+.panel{background:#fff;border:1px solid var(--g200);border-radius:12px;overflow:hidden;}
+.panel-header{padding:14px 18px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.panel-title{font-size:13px;font-weight:700;color:var(--g800);}
+.panel-sub{font-size:11px;color:var(--g500);margin-top:1px;}
+.panel-body{padding:18px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.form-full{grid-column:1/-1;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:11px;font-weight:700;color:var(--g700);}
+.req{color:var(--red);}
+.form-input{background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:8px 11px;font-size:12px;color:var(--g800);outline:none;width:100%;transition:border-color .15s;}
+.form-input:focus{border-color:var(--g600);background:#fff;}
+.form-select{background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:8px 11px;font-size:12px;color:var(--g800);outline:none;width:100%;cursor:pointer;}
+.form-textarea{background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:8px 11px;font-size:12px;color:var(--g800);outline:none;width:100%;resize:vertical;min-height:70px;font-family:inherit;}
+.form-hint{font-size:10px;color:var(--g500);}
+.time-group{display:flex;gap:5px;flex-wrap:wrap;}
+.time-btn{padding:6px 12px;border-radius:7px;font-size:11px;font-weight:700;border:1px solid var(--g200);background:var(--g50);color:var(--g600);cursor:pointer;transition:all .15s;}
+.time-btn.on{background:var(--g800);color:#fff;border-color:var(--g800);}
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{padding:9px 12px;font-size:11px;font-weight:700;color:var(--g500);text-align:left;border-bottom:1px solid var(--g200);background:var(--g50);white-space:nowrap;}
+.data-table td{padding:10px 12px;font-size:12px;color:var(--g700);border-bottom:1px solid var(--g100);vertical-align:middle;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--g50);}
+.fw{font-weight:700;color:var(--g800);}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;display:inline-block;white-space:nowrap;}
+.b-active{background:#E8F5E9;color:#2E7D32;}
+.b-end{background:#FFEBEB;color:#C03030;}
+.b-draft{background:var(--g100);color:var(--g600);border:1px solid var(--g200);}
+.b-wait{background:#FFF3E0;color:#E65100;}
+.b-blue{background:#E3F2FD;color:#1565C0;}
+.b-done{background:#E8F5E9;color:#2E7D32;}
+.b-reject{background:#FFEBEB;color:#C03030;}
+.b-purple{background:#EDE7F6;color:#4527A0;}
+.action-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.stat-card{background:#fff;border:1px solid var(--g200);border-radius:10px;padding:14px 16px;}
+.stat-label{font-size:11px;color:var(--g500);margin-bottom:5px;}
+.stat-num{font-size:22px;font-weight:800;color:var(--g800);}
+.stat-sub{font-size:10px;color:var(--g500);margin-top:3px;}
+.score-bar-wrap{display:flex;align-items:center;gap:6px;}
+.score-bar-bg{flex:1;height:5px;background:var(--g200);border-radius:3px;overflow:hidden;min-width:50px;}
+.score-bar-fill{height:100%;background:var(--g800);border-radius:3px;}
+.score-num{font-size:12px;font-weight:700;color:var(--g800);min-width:32px;text-align:right;}
+.url-link{color:#1565C0;font-size:11px;text-decoration:none;}
+.url-link:hover{text-decoration:underline;}
+.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.filter-input{background:#fff;border:1px solid var(--g200);border-radius:8px;padding:7px 11px;font-size:12px;color:var(--g800);outline:none;width:180px;}
+.filter-select{background:#fff;border:1px solid var(--g200);border-radius:8px;padding:7px 11px;font-size:12px;color:var(--g700);cursor:pointer;}
+
+/* 제품 등록 행 */
+.prod-section{border:1px solid var(--g200);border-radius:12px;overflow:hidden;margin-bottom:10px;}
+.prod-section-header{background:var(--g50);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--g200);}
+.prod-section-num{width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.prod-section-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+.del-btn{width:26px;height:26px;border-radius:6px;background:var(--g100);border:1px solid var(--g200);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--g500);}
+.del-btn:hover{background:#FFEBEB;color:var(--red);}
+.add-prod-btn{border:1.5px dashed var(--g300);border-radius:10px;padding:10px;text-align:center;cursor:pointer;color:var(--g500);font-size:12px;font-weight:600;background:transparent;width:100%;}
+.add-prod-btn:hover{border-color:var(--g600);color:var(--g700);background:var(--g50);}
+.thumb-preview{width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--g200);flex-shrink:0;}
+.thumb-placeholder{width:48px;height:48px;border-radius:8px;background:var(--g100);border:1px solid var(--g200);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+
+/* SNS 태그 */
+.sns-tag{display:inline-flex;align-items:center;gap:5px;background:var(--g100);border:1px solid var(--g200);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--g700);}
+.sns-tag-del{cursor:pointer;color:var(--g400);font-size:12px;line-height:1;}
+.sns-tag-del:hover{color:var(--red);}
+.sns-tags-wrap{display:flex;gap:5px;flex-wrap:wrap;min-height:28px;align-items:center;}
+
+/* 체크박스 */
+.cb{width:16px;height:16px;cursor:pointer;accent-color:var(--g800);}
+
+/* 입금 예정일 하이라이트 */
+.due-soon{color:var(--red);font-weight:700;}
+
+/* 모달 */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:22px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.15);}
+.modal-title{font-size:15px;font-weight:700;color:var(--g800);margin-bottom:16px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--g100);}
+.section-divider{height:1px;background:var(--g100);margin:4px 0;grid-column:1/-1;}
+.section-label{font-size:11px;font-weight:800;color:var(--g500);letter-spacing:.04em;grid-column:1/-1;padding-top:4px;}
+
+.save-bar{background:#fff;border-top:1px solid var(--g200);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
+.period-btn.on{background:var(--g800);color:#fff;border-color:var(--g800);}
+.toast{position:fixed;top:18px;right:18px;background:var(--g800);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:600;z-index:9999;display:none;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+.toast.show{display:flex;}
+.excel-bar{background:#E8F5E9;border:1px solid #C8E6C9;border-radius:10px;padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:10px;}
+.excel-bar.show{display:flex;}
+</style>
+
+<style id="lock-style">
+#lock-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#F5F5F5;z-index:9999;display:flex;align-items:center;justify-content:center;}
+.lock-box{background:#fff;border:1px solid #EEEEEE;border-radius:16px;padding:36px 32px;width:360px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08);}
+.lock-logo{width:44px;height:44px;border-radius:12px;background:#E24B4A;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;margin:0 auto 16px;}
+.lock-title{font-size:18px;font-weight:800;color:#212121;margin-bottom:6px;}
+.lock-sub{font-size:13px;color:#9E9E9E;margin-bottom:24px;}
+.lock-input{width:100%;background:#F7F7F8;border:1px solid #E0E0E0;border-radius:10px;padding:12px 14px;font-size:14px;color:#212121;outline:none;text-align:center;letter-spacing:.1em;margin-bottom:10px;}
+.lock-input:focus{border-color:#424242;}
+.lock-btn{width:100%;background:#212121;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;}
+.lock-btn:hover{background:#424242;}
+.lock-error{font-size:12px;color:#E24B4A;min-height:18px;}
+</style>
+
+</head>
+<body>
+
+<!-- 사이드바 -->
+
+<!-- 비밀번호 잠금 화면 -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-logo">OZ</div>
+    <div class="lock-title">OZKIZ 관리자</div>
+    <div class="lock-sub">관리자 전용 페이지입니다</div>
+    <input class="lock-input" type="password" id="pw-input" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="lock-btn" onclick="checkPw()">입장하기</button>
+    <div class="lock-error" id="pw-error"></div>
+  </div>
+</div>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="logo-icon">OZ</div>
+      <div><div class="logo-text">OZKIZ</div><div class="logo-sub">관리자 대시보드</div></div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group-label">개요</div>
+    <div class="nav-item active" onclick="goPage('p-dashboard',this)"><span class="nav-icon">📊</span>대시보드</div>
+    <div class="nav-group-label" style="margin-top:5px;">캠페인</div>
+    <div class="nav-item" onclick="goPage('p-camp-list',this)"><span class="nav-icon">📋</span>캠페인 목록</div>
+    <div class="nav-item" onclick="goPage('p-camp-new',this)"><span class="nav-icon">➕</span>새 캠페인 등록</div>
+    <div class="nav-group-label" style="margin-top:5px;">서포터즈</div>
+    <div class="nav-item" onclick="goPage('p-supporters',this)"><span class="nav-icon">👥</span>서포터즈 목록</div>
+    <div class="nav-item" onclick="goPage('p-scores',this)"><span class="nav-icon">⭐</span>점수 현황</div>
+    <div class="nav-group-label" style="margin-top:5px;">운영</div>
+    <div class="nav-item" onclick="goPage('p-reviews',this)"><span class="nav-icon">📝</span>후기 관리</div>
+    <div class="nav-item" onclick="goPage('p-payback',this)"><span class="nav-icon">💰</span>페이백 처리</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;">
+      <div class="admin-av">H</div>
+      <div><div style="font-size:12px;font-weight:700;color:var(--g800);">헤이즐</div><div style="font-size:10px;color:var(--g500);">관리자</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ===== 0. 대시보드 홈 ===== -->
+<div class="page active" id="p-dashboard">
+  <div class="topbar">
+    <div class="topbar-title">대시보드</div>
+    <div class="topbar-right" style="display:flex;align-items:center;gap:8px;">
+      <div style="display:flex;gap:4px;" id="period-btns">
+        <button class="btn btn-outline btn-sm period-btn on" onclick="setPeriod('이번달',this)">이번 달</button>
+        <button class="btn btn-outline btn-sm period-btn" onclick="setPeriod('지난달',this)">지난 달</button>
+        <button class="btn btn-outline btn-sm period-btn" onclick="setPeriod('3개월',this)">3개월</button>
+        <button class="btn btn-outline btn-sm period-btn" onclick="setPeriod('전체',this)">전체</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <input type="date" id="date-from" value="2025-04-01" style="background:#fff;border:1px solid var(--g200);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--g700);outline:none;">
+        <span style="font-size:12px;color:var(--g500);">~</span>
+        <input type="date" id="date-to" value="2025-04-30" style="background:#fff;border:1px solid var(--g200);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--g700);outline:none;">
+        <button class="btn btn-primary btn-sm" onclick="applyFilter()">조회</button>
+      </div>
+    </div>
+  </div>
+  <div class="content">
+
+    <div style="font-size:12px;color:var(--g500);" id="period-label">2025년 4월 1일 ~ 4월 30일 기준</div>
+
+    <!-- 통계 카드 5개 한 줄 -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+      <div class="stat-card"><div class="stat-label">진행 중인 캠페인</div><div class="stat-num" style="color:var(--red);" id="d-camp">1</div><div class="stat-sub" id="d-camp-sub">전체 3개 중</div></div>
+      <div class="stat-card"><div class="stat-label">진행된 총 제품 수</div><div class="stat-num" id="d-prod">8</div><div class="stat-sub" id="d-prod-sub">이번 달 3개</div></div>
+      <div class="stat-card"><div class="stat-label">총 서포터즈</div><div class="stat-num" id="d-sup">24</div><div class="stat-sub" id="d-sup-sub">활성 21명</div></div>
+      <div class="stat-card"><div class="stat-label">후기 검토 대기</div><div class="stat-num" style="color:#E65100;" id="d-review">5</div><div class="stat-sub" id="d-review-sub">승인 완료 12건</div></div>
+      <div class="stat-card"><div class="stat-label">페이백 입금 대기</div><div class="stat-num" style="color:var(--red);" id="d-payback">3</div><div class="stat-sub" id="d-payback-sub">95,000원</div></div>
+    </div>
+
+    <!-- 채널별 차트 + 캠페인 진행률 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="panel">
+        <div class="panel-header">
+          <div><div class="panel-title">채널별 진행 현황</div><div class="panel-sub" id="ch-period-label">기간 내 전체 캠페인</div></div>
+        </div>
+        <div class="panel-body">
+          <div style="position:relative;height:200px;">
+            <canvas id="channelChart" role="img" aria-label="채널별 진행 현황 막대 차트">자사몰 8건, 쿠팡 6건, 네이버 4건, 무신사 3건, 보리보리 2건</canvas>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--g600);"><span style="width:10px;height:10px;border-radius:2px;background:#212121;display:inline-block;"></span>자사몰</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--g600);"><span style="width:10px;height:10px;border-radius:2px;background:#9E9E9E;display:inline-block;"></span>외부몰</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">캠페인 진행률</div></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <div style="font-size:12px;font-weight:700;color:var(--g800);">2025 봄 신상 체험단</div>
+              <span class="badge b-active">진행중</span>
+            </div>
+            <div style="font-size:11px;color:var(--g500);margin-bottom:6px;">후기 마감 D-5 · 신청 18명</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--g500);"><span>후기 제출</span><span>13/18명 (72%)</span></div>
+              <div style="height:6px;background:var(--g100);border-radius:3px;overflow:hidden;"><div style="width:72%;height:100%;background:var(--g800);border-radius:3px;"></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;">
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--g500);"><span>페이백 완료</span><span>5/18명 (28%)</span></div>
+              <div style="height:6px;background:var(--g100);border-radius:3px;overflow:hidden;"><div style="width:28%;height:100%;background:var(--g300);border-radius:3px;"></div></div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--g100);"></div>
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <div style="font-size:12px;font-weight:700;color:var(--g800);">여름 수영복 체험단</div>
+              <span class="badge b-draft">임시저장</span>
+            </div>
+            <div style="font-size:11px;color:var(--g500);margin-bottom:6px;">신청 마감 4/22 · 아직 오픈 전</div>
+            <div style="height:6px;background:var(--g100);border-radius:3px;"></div>
+          </div>
+          <div style="height:1px;background:var(--g100);"></div>
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <div style="font-size:12px;font-weight:700;color:var(--g800);">2025 겨울 패딩 체험단</div>
+              <span class="badge b-end">종료</span>
+            </div>
+            <div style="font-size:11px;color:var(--g500);margin-bottom:6px;">완료 · 24명 참여</div>
+            <div style="height:6px;background:var(--g100);border-radius:3px;overflow:hidden;"><div style="width:100%;height:100%;background:#C8E6C9;border-radius:3px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 캘린더 + 일정 타임라인 -->
+    <div style="display:grid;grid-template-columns:1.3fr 0.7fr;gap:14px;">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title" id="cal-title">4월 캘린더</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <span style="display:flex;align-items:center;gap:3px;font-size:10px;color:var(--g600);"><span style="width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block;"></span>신청마감</span>
+            <span style="display:flex;align-items:center;gap:3px;font-size:10px;color:var(--g600);"><span style="width:7px;height:7px;border-radius:50%;background:#1565C0;display:inline-block;"></span>후기마감</span>
+            <span style="display:flex;align-items:center;gap:3px;font-size:10px;color:var(--g600);"><span style="width:7px;height:7px;border-radius:50%;background:#2E7D32;display:inline-block;"></span>페이백</span>
+            <div style="display:flex;gap:4px;margin-left:8px;">
+              <button class="btn btn-outline btn-sm" onclick="changeMonth(-1)" style="padding:3px 8px;">‹</button>
+              <button class="btn btn-outline btn-sm" onclick="changeMonth(1)" style="padding:3px 8px;">›</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:10px 14px;">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;">
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--g500);padding:3px 0;">일</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--g500);padding:3px 0;">월</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--g500);padding:3px 0;">화</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--g500);padding:3px 0;">수</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--g500);padding:3px 0;">목</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--g500);padding:3px 0;">금</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--g500);padding:3px 0;">토</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;" id="cal-body"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">이번 달 주요 일정</div></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:3px;"></div><div><div style="font-size:12px;font-weight:700;color:var(--g800);">신청 마감 — 봄 신상</div><div style="font-size:11px;color:var(--g500);">4월 15일 오후 3시</div></div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#1565C0;flex-shrink:0;margin-top:3px;"></div><div><div style="font-size:12px;font-weight:700;color:var(--g800);">후기 마감 — 봄 신상</div><div style="font-size:11px;color:var(--g500);">4월 22일 자정</div></div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:3px;"></div><div><div style="font-size:12px;font-weight:700;color:var(--g800);">신청 마감 — 수영복</div><div style="font-size:11px;color:var(--g500);">4월 22일 오후 3시</div></div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#2E7D32;flex-shrink:0;margin-top:3px;"></div><div><div style="font-size:12px;font-weight:700;color:var(--g800);">페이백 입금 예정 (3건)</div><div style="font-size:11px;color:var(--g500);">4월 26~28일</div></div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#1565C0;flex-shrink:0;margin-top:3px;"></div><div><div style="font-size:12px;font-weight:700;color:var(--g800);">후기 마감 — 수영복</div><div style="font-size:11px;color:var(--g500);">4월 30일 자정</div></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== 1. 캠페인 목록 ===== -->
+<div class="page" id="p-camp-list">
+  <div class="topbar"><div class="topbar-title">캠페인 목록</div><button class="btn btn-primary" onclick="goPage('p-camp-new',null)">+ 새 캠페인 등록</button></div>
+  <div class="content">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">전체 캠페인</div><div class="stat-num">3</div></div>
+      <div class="stat-card"><div class="stat-label">진행중</div><div class="stat-num" style="color:var(--red);">1</div></div>
+      <div class="stat-card"><div class="stat-label">총 신청자</div><div class="stat-num">42</div></div>
+      <div class="stat-card"><div class="stat-label">완료 캠페인</div><div class="stat-num">1</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div><div class="panel-title">전체 캠페인</div></div></div>
+      <table class="data-table">
+        <thead><tr><th>캠페인명</th><th>신청 마감</th><th>후기 마감</th><th>신청자</th><th>상태</th><th>관리</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="fw" style="cursor:pointer;color:var(--red);text-decoration:underline;" onclick="openCampDetail('2025 봄 신상 체험단','04/15 오후 3시 · 04/22 자정','진행중')">2025 봄 신상 체험단</span></td>
+            <td>2025.04.15 오후 3시</td><td>2025.04.22 자정</td><td>18명</td>
+            <td><span class="badge b-active">진행중</span></td>
+            <td><div class="action-btns">
+              <button class="btn btn-primary btn-sm" onclick="openCampDetail('2025 봄 신상 체험단','04/15 오후 3시 · 04/22 자정','진행중')">📊 상세보기</button>
+              <button class="btn btn-outline btn-sm" onclick="editCamp('static','2025 봄 신상 체험단')">수정</button>
+            </div></td>
+          </tr>
+          <tr><td class="fw">2025 겨울 패딩 체험단</td><td>2025.01.10 오후 3시</td><td>2025.01.20 자정</td><td>24명</td><td><span class="badge b-end">종료</span></td><td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="showToast('상세 보기 — DB 연동 후 활성화')">보기</button></div></td></tr>
+          <tr><td class="fw">여름 수영복 체험단</td><td>2025.04.22 오후 3시</td><td>2025.04.30 자정</td><td>0명</td><td><span class="badge b-draft">임시저장</span></td><td><div class="action-btns"><button class="btn btn-outline btn-sm">수정</button><button class="btn btn-primary btn-sm">오픈</button></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2. 새 캠페인 등록 ===== -->
+
+
+<!-- ===== 3. 서포터즈 목록 ===== -->
+<div class="page" id="p-supporters">
+  <div class="topbar">
+    <div class="topbar-title">서포터즈 목록</div>
+    <button class="btn btn-primary" onclick="document.getElementById('modal-add').classList.add('show')">+ 서포터즈 추가</button>
+  </div>
+  <div class="content">
+    <!-- 관리 상태 기준 안내 -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:12px 14px;border-left:3px solid #2E7D32;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span class="badge b-active">활성</span>
+        </div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.6;">로그인 이력 있음<br>정상 활동 중인 서포터즈</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:12px 14px;border-left:3px solid #E65100;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span class="badge b-caution">주의</span>
+        </div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.6;">노쇼 1회↑<br>후기 약속 미이행</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:12px 14px;border-left:3px solid #C03030;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span class="badge b-stop">정지</span>
+          <span style="font-size:10px;color:var(--g500);">자동</span>
+        </div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.6;">일시정지<br>주의 2회 누적 시 자동 적용</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:12px 14px;border-left:3px solid var(--g400);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span class="badge b-inactive">비활성</span>
+        </div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.6;">등록만 된 상태<br>접속 이력 없음</div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">전체 서포터즈</div><div class="stat-num">24</div></div>
+      <div class="stat-card"><div class="stat-label">활성</div><div class="stat-num" style="color:#2E7D32;">21</div></div>
+      <div class="stat-card"><div class="stat-label">비활성</div><div class="stat-num" style="color:var(--g500);">3</div></div>
+      <div class="stat-card"><div class="stat-label">평균 점수</div><div class="stat-num">87점</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div><div class="panel-title">서포터즈 목록</div></div>
+        <div class="filter-bar">
+          <div style="display:flex;gap:6px;">
+            <input class="filter-input" id="sup-search" placeholder="이름·전화번호 검색" onkeydown="if(event.key==='Enter')searchSupporters()">
+            <button class="btn btn-outline btn-sm" onclick="searchSupporters()">검색</button>
+          </div>
+          <select class="filter-select" onchange="searchSupporters()">
+            <option value="">전체 상태</option>
+            <option value="활성">활성</option>
+            <option value="주의">주의</option>
+            <option value="정지">정지</option>
+            <option value="비활성">비활성</option>
+          </select>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>이름</th><th>전화번호</th><th>SNS</th><th>총 참여</th><th>점수</th><th>관리 상태</th><th>메모</th><th>관리</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="fw">김서포</td>
+            <td style="font-size:11px;">010-****-5678</td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <a href="https://instagram.com" target="_blank" class="url-link">📷 @kim_style</a>
+                <a href="https://blog.naver.com" target="_blank" class="url-link">📝 네이버 블로그</a>
+              </div>
+            </td>
+            <td>3회</td>
+            <td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:80%;"></div></div><div class="score-num">80점</div></div></td>
+            <td><span class="badge b-active">활성</span></td>
+            <td style="font-size:11px;color:var(--g500);max-width:120px;">성실한 서포터즈</td>
+            <td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openEdit('김서포',80,'활성','성실한 서포터즈')">수정</button></div></td>
+          </tr>
+          <tr>
+            <td class="fw">이맘마</td>
+            <td style="font-size:11px;">010-****-1234</td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <a href="https://instagram.com" target="_blank" class="url-link">📷 @mama_daily</a>
+                <a href="https://blog.naver.com" target="_blank" class="url-link">📝 티스토리</a>
+                <a href="#" target="_blank" class="url-link">🔗 유튜브</a>
+              </div>
+            </td>
+            <td>5회</td>
+            <td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:100%;"></div></div><div class="score-num">100점</div></div></td>
+            <td><span class="badge b-active">활성</span></td>
+            <td style="font-size:11px;color:var(--g500);max-width:120px;">VIP 서포터즈, 영향력 높음</td>
+            <td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openEdit('이맘마',100,'활성','VIP 서포터즈, 영향력 높음')">수정</button></div></td>
+          </tr>
+          <tr>
+            <td class="fw">박노쇼</td>
+            <td style="font-size:11px;">010-****-9999</td>
+            <td><a href="https://instagram.com" target="_blank" class="url-link">📷 @park_kids</a></td>
+            <td>2회</td>
+            <td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:40%;background:var(--red);"></div></div><div class="score-num" style="color:var(--red);">40점</div></div></td>
+            <td><span class="badge b-caution">주의</span></td>
+            <td style="font-size:11px;color:var(--red);max-width:120px;">노쇼 1회 발생</td>
+            <td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openEdit('박노쇼',40,'주의','노쇼 1회 발생')">수정</button></div></td>
+          </tr>
+          <tr>
+            <td class="fw">정비활</td>
+            <td style="font-size:11px;">010-****-3333</td>
+            <td style="color:var(--g400);font-size:11px;">—</td>
+            <td>1회</td>
+            <td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:55%;background:var(--g400);"></div></div><div class="score-num" style="color:var(--g500);">55점</div></div></td>
+            <td><span class="badge b-inactive">비활성</span></td>
+            <td style="font-size:11px;color:var(--g500);max-width:120px;">자진 탈퇴 요청</td>
+            <td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="openEdit('정비활',55,'비활성','자진 탈퇴 요청')">수정</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 4. 점수 현황 ===== -->
+<div class="page" id="p-scores">
+  <div class="topbar"><div class="topbar-title">점수 현황</div></div>
+  <div class="content">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">점수 체계</div></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+          <div style="background:var(--g50);border:1px solid var(--g200);border-radius:9px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--g500);margin-bottom:3px;">기본 점수</div><div style="font-size:18px;font-weight:800;">100점</div></div>
+          <div style="background:var(--g50);border:1px solid var(--g200);border-radius:9px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--g500);margin-bottom:3px;">참여 1회당</div><div style="font-size:18px;font-weight:800;color:var(--red);">−20점</div></div>
+          <div style="background:#E8F5E9;border:1px solid #C8E6C9;border-radius:9px;padding:10px;text-align:center;"><div style="font-size:10px;color:#2E7D32;margin-bottom:3px;">리뷰 3종 완료</div><div style="font-size:18px;font-weight:800;color:#2E7D32;">+15점</div></div>
+          <div style="background:#E8F5E9;border:1px solid #C8E6C9;border-radius:9px;padding:10px;text-align:center;"><div style="font-size:10px;color:#2E7D32;margin-bottom:3px;">마감 1일 전</div><div style="font-size:18px;font-weight:800;color:#2E7D32;">+5점</div></div>
+          <div style="background:#FFEBEB;border:1px solid #FFAAAA;border-radius:9px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--red);margin-bottom:3px;">노쇼</div><div style="font-size:18px;font-weight:800;color:var(--red);">−30점</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div><div class="panel-title">점수 순위</div><div class="panel-sub">높은 점수 순 배정</div></div></div>
+      <table class="data-table">
+        <thead><tr><th>순위</th><th>이름</th><th>현재 점수</th><th>참여</th><th>리뷰</th><th>노쇼</th></tr></thead>
+        <tbody>
+          <tr><td class="fw">#1</td><td class="fw">이맘마</td><td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:100%;"></div></div><div class="score-num">100점</div></div></td><td>0회</td><td><span class="badge b-done">3종</span></td><td>0회</td></tr>
+          <tr><td class="fw">#2</td><td class="fw">최리뷰</td><td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:92%;"></div></div><div class="score-num">92점</div></div></td><td>1회</td><td><span class="badge b-done">3종</span></td><td>0회</td></tr>
+          <tr><td class="fw">#3</td><td class="fw">김서포</td><td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:80%;"></div></div><div class="score-num">80점</div></div></td><td>1회</td><td><span class="badge b-done">2종</span></td><td>0회</td></tr>
+          <tr><td class="fw" style="color:var(--red);">#4</td><td class="fw" style="color:var(--red);">박노쇼</td><td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:40%;background:var(--red);"></div></div><div class="score-num" style="color:var(--red);">40점</div></div></td><td>1회</td><td><span class="badge b-reject">노쇼</span></td><td>1회</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 5. 후기 관리 ===== -->
+<div class="page" id="p-reviews">
+  <div class="topbar">
+    <div class="topbar-title">후기 관리</div>
+    <div style="font-size:11px;color:var(--g500);">후기 확인 후 페이백 진행 · 반려 후 재제출 무제한</div>
+  </div>
+  <div class="content">
+
+    <!-- 통계 카드 -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+      <div class="stat-card"><div class="stat-label">검토 대기</div><div class="stat-num" style="color:var(--red);">5</div></div>
+      <div class="stat-card"><div class="stat-label">검토 중</div><div class="stat-num" style="color:#6A1B9A;">2</div></div>
+      <div class="stat-card"><div class="stat-label">재제출 요청</div><div class="stat-num" style="color:#1565C0;">1</div></div>
+      <div class="stat-card"><div class="stat-label">승인 완료</div><div class="stat-num" style="color:#2E7D32;">12</div></div>
+      <div class="stat-card"><div class="stat-label">노쇼</div><div class="stat-num" style="color:var(--red);">2</div></div>
+    </div>
+
+    <!-- 승인 기준 안내 -->
+    <div style="background:#fff;border:1px solid var(--g200);border-radius:12px;padding:14px 18px;">
+      <div style="font-size:12px;font-weight:700;color:var(--g800);margin-bottom:10px;">📋 후기 승인 기준</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="background:#E8F5E9;border-radius:9px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#2E7D32;margin-bottom:4px;">✅ 채널 수</div>
+          <div style="font-size:16px;font-weight:800;color:#1B5E20;">2채널 이상</div>
+          <div style="font-size:10px;color:#2E7D32;margin-top:3px;">자사몰 · 구매몰 · SNS 중 2개 이상</div>
+        </div>
+        <div style="background:#E8F5E9;border-radius:9px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#2E7D32;margin-bottom:4px;">✅ 사진</div>
+          <div style="font-size:16px;font-weight:800;color:#1B5E20;">1장 이상</div>
+          <div style="font-size:10px;color:#2E7D32;margin-top:3px;">착용컷 포함 권장</div>
+        </div>
+        <div style="background:#E8F5E9;border-radius:9px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#2E7D32;margin-bottom:4px;">✅ 텍스트</div>
+          <div style="font-size:16px;font-weight:800;color:#1B5E20;">30자 이상</div>
+          <div style="font-size:10px;color:#2E7D32;margin-top:3px;">자녀 사이즈 기입 권장</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상태 기준 안내 -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:10px 12px;border-left:3px solid #E65100;">
+        <div style="margin-bottom:4px;"><span class="badge b-wait">검토 대기</span></div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.5;">URL 제출 완료<br>관리자 확인 전</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:10px 12px;border-left:3px solid #6A1B9A;">
+        <div style="margin-bottom:4px;"><span class="badge b-reviewing">검토 중</span></div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.5;">관리자 확인 시작<br>결정 전</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:10px 12px;border-left:3px solid #F57F17;">
+        <div style="margin-bottom:4px;"><span class="badge b-partial">일부 완료</span></div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.5;">1채널만 제출<br>1채널 추가 필요</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:10px 12px;border-left:3px solid #1565C0;">
+        <div style="margin-bottom:4px;"><span class="badge b-resubmit">재제출 요청</span></div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.5;">기준 미달 → 반려<br>재제출 무제한</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:10px 12px;border-left:3px solid #2E7D32;">
+        <div style="margin-bottom:4px;"><span class="badge b-done">승인 완료</span></div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.5;">2채널↑ · 사진 1장↑<br>텍스트 30자↑</div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--g200);border-radius:10px;padding:10px 12px;border-left:3px solid var(--red);">
+        <div style="margin-bottom:4px;"><span class="badge b-reject">노쇼</span></div>
+        <div style="font-size:11px;color:var(--g600);line-height:1.5;">마감일 미제출<br>점수 −30 자동</div>
+      </div>
+    </div>
+
+    <!-- 후기 목록 -->
+    <div class="panel">
+      <div class="panel-header">
+        <div><div class="panel-title">후기 제출 현황</div></div>
+        <div class="filter-bar">
+          <select class="filter-select">
+            <option>전체 상태</option>
+            <option>검토 대기</option>
+            <option>검토 중</option>
+            <option>일부 완료</option>
+            <option>재제출 요청</option>
+            <option>승인 완료</option>
+            <option>노쇼</option>
+          </select>
+          <select class="filter-select"><option>전체 캠페인</option><option>2025 봄 신상 체험단</option></select>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>서포터즈</th><th>캠페인</th><th>자사몰</th><th>구매몰</th>
+            <th>SNS</th><th>재제출 횟수</th><th>제출일</th><th>상태</th><th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw">이맘마</td>
+            <td style="font-size:11px;">봄 신상 체험단</td>
+            <td><a href="#" class="url-link">링크 ↗</a></td>
+            <td><a href="#" class="url-link">링크 ↗</a></td>
+            <td><a href="#" class="url-link">링크 ↗</a></td>
+            <td style="text-align:center;font-size:12px;">0회</td>
+            <td style="font-size:11px;">04/18</td>
+            <td><span class="badge b-wait">검토 대기</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-outline btn-sm" style="color:#6A1B9A;font-size:11px;" onclick="changeReviewStatus(this,'b-reviewing','검토 중')">검토 시작</button>
+                <button class="btn btn-green btn-sm" onclick="changeReviewStatus(this,'b-done','승인 완료');showToast('승인 완료! 페이백 진행 가능해요')">승인</button>
+                <button class="btn btn-outline btn-sm" style="color:var(--red);" onclick="openRejectModal(this)">반려</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="fw">김서포</td>
+            <td style="font-size:11px;">봄 신상 체험단</td>
+            <td><a href="#" class="url-link">링크 ↗</a></td>
+            <td><a href="#" class="url-link">링크 ↗</a></td>
+            <td style="font-size:11px;color:var(--g400);">미제출</td>
+            <td style="text-align:center;font-size:12px;">0회</td>
+            <td style="font-size:11px;">04/19</td>
+            <td><span class="badge b-partial">일부 완료</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-outline btn-sm" style="color:#6A1B9A;font-size:11px;" onclick="changeReviewStatus(this,'b-reviewing','검토 중')">검토 시작</button>
+                <button class="btn btn-green btn-sm" onclick="changeReviewStatus(this,'b-done','승인 완료');showToast('승인 완료!')">승인</button>
+                <button class="btn btn-outline btn-sm" style="color:var(--red);" onclick="openRejectModal(this)">반려</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="fw">최리뷰</td>
+            <td style="font-size:11px;">봄 신상 체험단</td>
+            <td><a href="#" class="url-link">링크 ↗</a></td>
+            <td><a href="#" class="url-link">링크 ↗</a></td>
+            <td><a href="#" class="url-link">링크 ↗</a></td>
+            <td style="text-align:center;font-size:12px;color:#2E7D32;">0회</td>
+            <td style="font-size:11px;">04/17</td>
+            <td><span class="badge b-done">승인 완료</span></td>
+            <td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="showToast('상세 보기 — DB 연동 후 활성화')">보기</button></div></td>
+          </tr>
+          <tr>
+            <td class="fw">정재제</td>
+            <td style="font-size:11px;">봄 신상 체험단</td>
+            <td><a href="#" class="url-link">링크 ↗</a></td>
+            <td style="font-size:11px;color:var(--g400);">미제출</td>
+            <td style="font-size:11px;color:var(--g400);">미제출</td>
+            <td style="text-align:center;font-size:12px;color:var(--red);">2회</td>
+            <td style="font-size:11px;">04/20</td>
+            <td><span class="badge b-resubmit">재제출 요청</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-outline btn-sm" style="color:#6A1B9A;font-size:11px;" onclick="changeReviewStatus(this,'b-reviewing','검토 중')">검토 시작</button>
+                <button class="btn btn-green btn-sm" onclick="changeReviewStatus(this,'b-done','승인 완료');showToast('승인 완료!')">승인</button>
+                <button class="btn btn-outline btn-sm" style="color:var(--red);" onclick="openRejectModal(this)">반려</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="fw">박노쇼</td>
+            <td style="font-size:11px;">봄 신상 체험단</td>
+            <td style="font-size:11px;color:var(--g400);">미제출</td>
+            <td style="font-size:11px;color:var(--g400);">미제출</td>
+            <td style="font-size:11px;color:var(--g400);">미제출</td>
+            <td style="text-align:center;font-size:12px;color:var(--g400);">-</td>
+            <td style="font-size:11px;color:var(--red);">마감 초과</td>
+            <td><span class="badge b-reject">노쇼</span></td>
+            <td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="showToast('점수 −30 반영됐어요')">점수 반영</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== 6. 페이백 처리 ===== -->
+<div class="page" id="p-payback">
+  <div class="topbar">
+    <div class="topbar-title">페이백 처리</div>
+    <div style="font-size:11px;color:var(--g500);">(주)오픈한 명의 · 주말 제외 7일 이내 입금</div>
+  </div>
+  <div class="content">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">기안 대기</div><div class="stat-num" style="color:var(--red);">3</div><div class="stat-sub">95,000원</div></div>
+      <div class="stat-card"><div class="stat-label">기안 완료</div><div class="stat-num" style="color:#1565C0;">2</div><div class="stat-sub">67,000원</div></div>
+      <div class="stat-card"><div class="stat-label">입금 대기</div><div class="stat-num" style="color:#E65100;">4</div><div class="stat-sub">128,000원</div></div>
+      <div class="stat-card"><div class="stat-label">입금 완료</div><div class="stat-num" style="color:#2E7D32;">10</div><div class="stat-sub">312,000원</div></div>
+    </div>
+
+    <!-- 기안 대기 선택 → 엑셀 다운 바 -->
+    <div class="excel-bar" id="excel-bar">
+      <div style="font-size:13px;font-weight:700;color:#2E7D32;"><span id="selected-count">0</span>명 선택됨 · 기안용 엑셀 파일을 다운로드하세요</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-outline btn-sm" onclick="clearSelection()">선택 해제</button>
+        <button class="btn btn-green" onclick="downloadExcel()">📥 기안용 엑셀 다운로드</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div><div class="panel-title">페이백 신청 목록</div><div class="panel-sub">기안 대기 항목을 선택해 엑셀로 내보낼 수 있어요</div></div>
+        <div class="filter-bar">
+          <select class="filter-select" onchange="filterPayback(this.value)">
+            <option value="">전체 상태</option>
+            <option value="기안대기">기안 대기</option>
+            <option value="기안완료">기안 완료</option>
+            <option value="입금대기">입금 대기</option>
+            <option value="입금완료">입금 완료</option>
+          </select>
+          <select class="filter-select"><option>전체 캠페인</option><option>2025 봄 신상 체험단</option><option>2025 겨울 패딩 체험단</option></select>
+        </div>
+      </div>
+      <table class="data-table" id="payback-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" class="cb" id="cb-all" onchange="toggleAll(this)"></th>
+            <th>이름</th>
+            <th>전화번호</th>
+            <th>캠페인·제품</th>
+            <th>구매채널</th>
+            <th>구매 금액</th>
+            <th>은행</th>
+            <th>계좌번호</th>
+            <th>예금주</th>
+            <th>입금예정일</th>
+            <th>상태</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="payback-tbody">
+          <tr data-status="기안대기" data-name="이맘마" data-phone="010-1234-5678" data-product="봄 신상 체험단 / 바람막이 점퍼" data-channel="자사몰" data-amount="38000" data-bank="카카오뱅크" data-account="3333-XX-XXXXXXX" data-holder="이맘마" data-duedate="2025-04-26">
+            <td><input type="checkbox" class="cb row-cb" onchange="updateSelection()"></td>
+            <td class="fw">이맘마</td>
+            <td style="font-size:11px;">010-1234-5678</td>
+            <td style="font-size:11px;line-height:1.5;">봄 신상 체험단<br>바람막이 점퍼</td>
+            <td><span class="badge b-blue">자사몰</span></td>
+            <td style="font-weight:700;">38,000원</td>
+            <td style="font-size:11px;">카카오뱅크</td>
+            <td style="font-size:11px;">3333-XX-XXXXXXX</td>
+            <td style="font-size:11px;">이맘마</td>
+            <td style="font-size:11px;" class="due-soon">04/26</td>
+            <td><span class="badge b-wait">기안 대기</span></td>
+            <td><div class="action-btns"><button class="btn btn-blue btn-sm" onclick="changeStatus(this,'기안완료')">기안 완료</button></div></td>
+          </tr>
+          <tr data-status="기안대기" data-name="김서포" data-phone="010-5678-1234" data-product="봄 신상 체험단 / 데님 팬츠" data-channel="쿠팡" data-amount="29000" data-bank="국민은행" data-account="111-XX-XXXXXXX" data-holder="김서포" data-duedate="2025-04-27">
+            <td><input type="checkbox" class="cb row-cb" onchange="updateSelection()"></td>
+            <td class="fw">김서포</td>
+            <td style="font-size:11px;">010-5678-1234</td>
+            <td style="font-size:11px;line-height:1.5;">봄 신상 체험단<br>데님 와이드 팬츠</td>
+            <td><span class="badge b-blue">쿠팡</span></td>
+            <td style="font-weight:700;">29,000원</td>
+            <td style="font-size:11px;">국민은행</td>
+            <td style="font-size:11px;">111-XX-XXXXXXX</td>
+            <td style="font-size:11px;">김서포</td>
+            <td style="font-size:11px;" class="due-soon">04/27</td>
+            <td><span class="badge b-wait">기안 대기</span></td>
+            <td><div class="action-btns"><button class="btn btn-blue btn-sm" onclick="changeStatus(this,'기안완료')">기안 완료</button></div></td>
+          </tr>
+          <tr data-status="기안대기" data-name="최리뷰" data-phone="010-7777-8888" data-product="봄 신상 체험단 / 바람막이 점퍼" data-channel="자사몰" data-amount="38000" data-bank="신한은행" data-account="110-XXX-XXXXXX" data-holder="최리뷰" data-duedate="2025-04-28">
+            <td><input type="checkbox" class="cb row-cb" onchange="updateSelection()"></td>
+            <td class="fw">최리뷰</td>
+            <td style="font-size:11px;">010-7777-8888</td>
+            <td style="font-size:11px;line-height:1.5;">봄 신상 체험단<br>바람막이 점퍼</td>
+            <td><span class="badge b-blue">자사몰</span></td>
+            <td style="font-weight:700;">38,000원</td>
+            <td style="font-size:11px;">신한은행</td>
+            <td style="font-size:11px;">110-XXX-XXXXXX</td>
+            <td style="font-size:11px;">최리뷰</td>
+            <td style="font-size:11px;">04/28</td>
+            <td><span class="badge b-wait">기안 대기</span></td>
+            <td><div class="action-btns"><button class="btn btn-blue btn-sm" onclick="changeStatus(this,'기안완료')">기안 완료</button></div></td>
+          </tr>
+          <tr data-status="기안완료">
+            <td><input type="checkbox" class="cb row-cb" disabled></td>
+            <td class="fw">박맘마</td>
+            <td style="font-size:11px;">010-2222-3333</td>
+            <td style="font-size:11px;line-height:1.5;">봄 신상 체험단<br>데님 와이드 팬츠</td>
+            <td><span class="badge b-blue">네이버</span></td>
+            <td style="font-weight:700;">29,000원</td>
+            <td style="font-size:11px;">하나은행</td>
+            <td style="font-size:11px;">222-XX-XXXXXXX</td>
+            <td style="font-size:11px;">박맘마</td>
+            <td style="font-size:11px;">04/29</td>
+            <td><span class="badge b-blue">기안 완료</span></td>
+            <td><div class="action-btns"><button class="btn btn-outline btn-sm" onclick="changeStatus(this,'입금대기')">입금 대기로</button></div></td>
+          </tr>
+          <tr data-status="입금대기">
+            <td><input type="checkbox" class="cb row-cb" disabled></td>
+            <td class="fw">정서포</td>
+            <td style="font-size:11px;">010-4444-5555</td>
+            <td style="font-size:11px;line-height:1.5;">겨울 패딩 체험단<br>패딩 점퍼</td>
+            <td><span class="badge b-blue">무신사</span></td>
+            <td style="font-weight:700;">58,000원</td>
+            <td style="font-size:11px;">우리은행</td>
+            <td style="font-size:11px;">333-XX-XXXXXXX</td>
+            <td style="font-size:11px;">정서포</td>
+            <td style="font-size:11px;">04/25</td>
+            <td><span class="badge b-wait" style="background:#FFF3E0;color:#E65100;">입금 대기</span></td>
+            <td><div class="action-btns"><button class="btn btn-green btn-sm" onclick="changeStatus(this,'입금완료')">입금 완료</button></div></td>
+          </tr>
+          <tr data-status="입금완료">
+            <td><input type="checkbox" class="cb row-cb" disabled></td>
+            <td class="fw">윤리뷰</td>
+            <td style="font-size:11px;">010-6666-7777</td>
+            <td style="font-size:11px;line-height:1.5;">겨울 패딩 체험단<br>패딩 점퍼</td>
+            <td><span class="badge b-blue">자사몰</span></td>
+            <td style="font-weight:700;">58,000원</td>
+            <td style="font-size:11px;">카카오뱅크</td>
+            <td style="font-size:11px;">4444-XX-XXXXXXX</td>
+            <td style="font-size:11px;">윤리뷰</td>
+            <td style="font-size:11px;">04/20</td>
+            <td><span class="badge b-done">입금 완료</span></td>
+            <td><div class="action-btns"><button class="btn btn-outline btn-sm" style="color:var(--g500);" onclick="showToast('영수증 기능 — 추후 업데이트')">영수증</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+
+
+
+<!-- 서포터즈 추가 모달 -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-title">서포터즈 추가</div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">이름 <span class="req">*</span></label><input class="form-input" placeholder="이름 입력"></div>
+      <div class="form-group"><label class="form-label">전화번호 <span class="req">*</span></label><input class="form-input" placeholder="010-0000-0000" type="tel"></div>
+      <div class="form-group">
+        <label class="form-label">인스타그램</label>
+        <input class="form-input" placeholder="https://instagram.com/계정명">
+      </div>
+      <div class="form-group">
+        <label class="form-label">블로그</label>
+        <input class="form-input" placeholder="https://blog.naver.com/계정명">
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">기타 SNS</label>
+        <input class="form-input" placeholder="https://... (유튜브, 틱톡 등)">
+        <div class="form-hint">여러 개는 쉼표로 구분하거나 아래에 추가 입력</div>
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">메모</label>
+        <textarea class="form-textarea" placeholder="관리용 메모 (서포터즈에게는 보이지 않아요)"></textarea>
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">초대 코드 (자동 생성)</label>
+        <div style="display:flex;gap:8px;"><input class="form-input" value="OZKIZ-2025-A3F7" readonly style="color:var(--g600);"><button class="btn btn-outline btn-sm" onclick="showToast('복사됐어요!')">복사</button></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('modal-add').classList.remove('show')">취소</button>
+      <button class="btn btn-primary" onclick="addSupporterManual()">추가하기</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 엑셀 일괄 업로드 모달 -->
+<div class="modal-overlay" id="modal-excel">
+  <div class="modal" style="width:520px;">
+    <div class="modal-title">📊 엑셀로 서포터즈 일괄 업로드</div>
+
+    <!-- 양식 다운로드 -->
+    <div style="background:var(--g50);border:1px solid var(--g200);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:var(--g800);margin-bottom:6px;">1단계 — 양식 다운로드</div>
+      <div style="font-size:12px;color:var(--g600);margin-bottom:10px;">아래 버튼으로 양식을 받아 작성해주세요.<br>컬럼 순서: 이름 / 전화번호 / 인스타그램 / 블로그 / 기타SNS / 메모</div>
+      <button class="btn btn-outline btn-sm" onclick="downloadTemplate()">📥 양식 다운로드 (.xlsx)</button>
+    </div>
+
+    <!-- 파일 업로드 -->
+    <div style="background:var(--g50);border:1px solid var(--g200);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:var(--g800);margin-bottom:6px;">2단계 — 파일 업로드</div>
+      <div id="excel-drop-zone" style="border:2px dashed var(--g300);border-radius:9px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;" onclick="document.getElementById('excel-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='#212121'" ondragleave="this.style.borderColor='var(--g300)'" ondrop="handleExcelDrop(event)">
+        <div style="font-size:20px;margin-bottom:6px;">📂</div>
+        <div style="font-size:13px;color:var(--g600);">클릭하거나 파일을 여기에 드래그하세요</div>
+        <div style="font-size:11px;color:var(--g400);margin-top:3px;">.xlsx, .csv 파일 지원</div>
+      </div>
+      <input type="file" id="excel-file-input" accept=".xlsx,.csv" style="display:none" onchange="handleExcelFile(this.files[0])">
+    </div>
+
+    <!-- 미리보기 테이블 -->
+    <div id="excel-preview" style="display:none;">
+      <div style="font-size:13px;font-weight:700;color:var(--g800);margin-bottom:8px;">3단계 — 미리보기 확인 후 업로드</div>
+      <div style="overflow-x:auto;max-height:200px;overflow-y:auto;border:1px solid var(--g200);border-radius:9px;">
+        <table class="data-table" id="excel-preview-table">
+          <thead><tr><th>이름</th><th>전화번호</th><th>인스타</th><th>블로그</th><th>메모</th></tr></thead>
+          <tbody id="excel-preview-body"></tbody>
+        </table>
+      </div>
+      <div style="font-size:11px;color:var(--g500);margin-top:6px;" id="excel-count">0명 인식됨</div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('modal-excel').classList.remove('show');resetExcel()">취소</button>
+      <button class="btn btn-primary" id="excel-upload-btn" onclick="uploadExcelData()" disabled style="opacity:.4;cursor:default;">업로드하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 서포터즈 수정 모달 -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-title" id="edit-title">서포터즈 정보 수정</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">점수 직접 수정</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="form-input" type="number" id="edit-score" style="width:100px;">
+          <span style="font-size:12px;color:var(--g500);">점 (기본 100점)</span>
+        </div>
+        <div class="form-hint">점수를 직접 조정할 수 있어요</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">관리 상태</label>
+        <select class="form-select" id="edit-status">
+          <option value="활성">활성 — 정상 활동 중</option>
+          <option value="주의">주의 — 노쇼 1회↑ / 후기 미이행</option>
+          <option value="정지">정지 — 일시정지 (주의 2회 누적 자동)</option>
+          <option value="비활성">비활성 — 미접속 (등록만 된 상태)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">인스타그램</label>
+        <input class="form-input" placeholder="https://instagram.com/계정명">
+      </div>
+      <div class="form-group">
+        <label class="form-label">블로그</label>
+        <input class="form-input" placeholder="https://blog.naver.com/계정명">
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">기타 SNS</label>
+        <input class="form-input" placeholder="https://... (유튜브, 틱톡 등)">
+      </div>
+      <div class="form-group form-full">
+        <label class="form-label">메모</label>
+        <textarea class="form-textarea" id="edit-memo" placeholder="관리용 메모"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('modal-edit').classList.remove('show')">취소</button>
+      <button class="btn btn-primary" onclick="document.getElementById('modal-edit').classList.remove('show');showToast('수정이 저장됐어요!')">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast">✓ <span id="toast-msg"></span></div>
+
+<!-- 캠페인 미리보기 모달 -->
+<div class="modal-overlay" id="modal-preview">
+  <div class="modal" style="width:420px;max-height:85vh;overflow-y:auto;padding:0;border-radius:20px;">
+    <div style="background:var(--red);color:#fff;padding:14px 16px 16px;border-radius:20px 20px 0 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-size:11px;opacity:.82;">서포터즈 앱 미리보기</div>
+        <button onclick="document.getElementById('modal-preview').classList.remove('show')" style="background:rgba(255,255,255,.2);border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;color:#fff;font-size:13px;">✕</button>
+      </div>
+      <div style="font-size:14px;font-weight:700;" id="prev-title">캠페인 이름</div>
+    </div>
+    <div style="padding:14px;display:flex;flex-direction:column;gap:10px;">
+      <!-- 캠페인 정보 카드 -->
+      <div style="background:#fff;border:1px solid #EEE;border-radius:12px;padding:12px 14px;">
+        <div style="font-size:12px;font-weight:700;color:#111;margin-bottom:7px;" id="prev-camp-name">캠페인명</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;">
+            <div style="width:5px;height:5px;border-radius:50%;background:#E24B4A;flex-shrink:0;"></div>
+            <span style="color:#9E9E9E;min-width:44px;">신청 마감</span>
+            <span style="font-weight:700;color:#E24B4A;" id="prev-apply">-</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;">
+            <div style="width:5px;height:5px;border-radius:50%;background:#1565C0;flex-shrink:0;"></div>
+            <span style="color:#9E9E9E;min-width:44px;">후기 마감</span>
+            <span style="font-weight:700;color:#1565C0;" id="prev-review">-</span>
+          </div>
+        </div>
+      </div>
+      <!-- 제품 목록 -->
+      <div style="font-size:11px;font-weight:700;color:#9E9E9E;padding:0 2px;">제품 선택 (여러 개 선택 가능)</div>
+      <div id="prev-products" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="background:#F5F5F5;border-radius:10px;padding:10px 12px;font-size:11px;color:#9E9E9E;text-align:center;">실제 앱에서 보이는 화면 기준 미리보기예요</div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- 반려 사유 모달 -->
+<div class="modal-overlay" id="modal-reject">
+  <div class="modal" style="width:440px;">
+    <div class="modal-title">후기 반려 사유 입력</div>
+    <div style="background:#FFEBEB;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:3px;">🔄 재제출 무제한</div>
+      <div style="font-size:11px;color:#C03030;line-height:1.6;">반려 사유가 서포터즈에게 전달되고 재제출이 요청돼요.<br>재제출 횟수는 무제한이에요.</div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label class="form-label">반려 사유 선택 <span class="req">*</span></label>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;"><input type="radio" name="reject-reason" value="채널 부족"> <span style="font-size:12px;">채널 1개만 제출 — 2채널 이상 필요</span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;"><input type="radio" name="reject-reason" value="사진 없음"> <span style="font-size:12px;">사진 미첨부 — 1장 이상 필요</span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;"><input type="radio" name="reject-reason" value="텍스트 부족"> <span style="font-size:12px;">텍스트 30자 미만</span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;"><input type="radio" name="reject-reason" value="해시태그 부족"> <span style="font-size:12px;">해시태그 5개 미만</span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;"><input type="radio" name="reject-reason" value="잘못된 URL"> <span style="font-size:12px;">URL 오류 — 접근 불가 또는 잘못된 링크</span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;"><input type="radio" name="reject-reason" value="기타"> <span style="font-size:12px;">기타</span></label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">추가 메모 (선택)</label>
+      <textarea class="form-textarea" placeholder="서포터즈에게 전달할 추가 안내사항을 입력해주세요" style="min-height:60px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="document.getElementById('modal-reject').classList.remove('show')">취소</button>
+      <button class="btn btn-primary" onclick="submitReject()">반려 처리하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 페이지 전환
+function goPage(id, el) {
+  if(id==='p-camp-list') setTimeout(loadCampList, 100);
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// 시간 버튼
+function setT(groupId, btn) {
+  document.querySelectorAll('#'+groupId+' .time-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// 제품 추가 (썸네일 + 구매링크 포함)
+let prodCount = 0;
+function addProd() {
+  prodCount++;
+  const div = document.createElement('div');
+  div.className = 'prod-section';
+  div.id = 'ps-'+prodCount;
+  div.innerHTML = `
+    <div class="prod-section-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="prod-section-num">${prodCount}</div>
+        <span style="font-size:12px;font-weight:700;color:var(--g700);">제품 ${prodCount}</span>
+      </div>
+      <button class="del-btn" onclick="document.getElementById('ps-${prodCount}').remove()">✕</button>
+    </div>
+    <div class="prod-section-body">
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label class="form-label">제품명 <span class="req">*</span></label>
+          <input class="form-input" placeholder="예: 봄 신상 바람막이 점퍼 (3~5세)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">구매채널 <span class="req">*</span></label>
+          <select class="form-select">
+            <option>자사몰</option><option>쿠팡</option><option>네이버</option>
+            <option>무신사</option><option>보리보리</option><option>카카오선물하기</option>
+          <option>기타</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">배정 수량</label>
+          <input class="form-input" type="number" value="10" placeholder="10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">썸네일 이미지 주소</label>
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <div class="thumb-placeholder" id="thumb-preview-${prodCount}">🖼️</div>
+            <div style="flex:1;">
+              <input class="form-input" placeholder="https://...이미지주소.jpg" oninput="previewThumb(this,'${prodCount}')">
+              <div class="form-hint" style="margin-top:3px;">이미지 URL 입력 시 미리보기 표시</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">구매 링크 <span class="req">*</span></label>
+          <input class="form-input" placeholder="https://구매페이지 링크">
+          <div class="form-hint">서포터즈가 이 링크로 구매해야 해요</div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('prod-list').appendChild(div);
+}
+
+function previewThumb(input, id) {
+  const preview = document.getElementById('thumb-preview-'+id);
+  if (input.value && input.value.startsWith('http')) {
+    preview.outerHTML = `<img class="thumb-preview" id="thumb-preview-${id}" src="${input.value}" onerror="this.style.display='none'" alt="미리보기">`;
+  }
+}
+
+// 초기 제품 1개만 — load 후 실행
+
+// 캠페인 오픈
+async function openCamp() {
+  const title = document.getElementById('camp-name').value.trim();
+  if (!title) { alert('캠페인 이름을 입력해주세요.'); return; }
+  const applyEl = document.querySelector('#p-camp-new input[type="datetime-local"]:nth-of-type(1)');
+  const reviewEl = document.querySelector('#p-camp-new input[type="datetime-local"]:nth-of-type(2)');
+  const descEl = document.querySelector('#p-camp-new textarea');
+  const maxEl = document.querySelector('#p-camp-new select');
+  const wgBtn = document.querySelector('#wg .time-btn.on');
+  const bgBtn = document.querySelector('#bg .time-btn.on');
+
+  const campData = {
+    title: title,
+    description: descEl ? descEl.value : '',
+    apply_deadline: applyEl && applyEl.value ? new Date(applyEl.value).toISOString() : null,
+    review_deadline: reviewEl && reviewEl.value ? new Date(reviewEl.value).toISOString() : null,
+    window_hours: wgBtn ? parseInt(wgBtn.textContent) : 3,
+    buy_deadline_hours: bgBtn ? parseInt(bgBtn.textContent) : 6,
+    max_products: maxEl ? parseInt(maxEl.value) : 2,
+    status: 'active'
+  };
+
+  try {
+    showToast('저장 중...');
+    const camps = await sbPost('campaigns', campData);
+    if (!camps || camps.error) throw new Error(camps?.error?.message || '저장 실패');
+    const campId = camps[0].id;
+
+    // 제품 저장
+    const prodSections = document.querySelectorAll('.prod-section');
+    for (const sec of prodSections) {
+      const inputs = sec.querySelectorAll('input');
+      const select = sec.querySelector('select');
+      const nameInput = inputs[0];
+      const qtyInput = inputs[1];
+      const thumbInput = inputs[2];
+      const urlInput = inputs[3];
+      if (!nameInput || !nameInput.value.trim()) continue;
+      await sbPost('products', {
+        campaign_id: campId,
+        name: nameInput.value.trim(),
+        channel: select ? select.value : '자사몰',
+        quantity: qtyInput ? parseInt(qtyInput.value) || 10 : 10,
+        thumbnail_url: thumbInput ? thumbInput.value.trim() : '',
+        purchase_url: urlInput ? urlInput.value.trim() : ''
+      });
+    }
+
+    showToast('🚀 캠페인이 오픈됐어요!');
+    setTimeout(() => { goPage('p-camp-list', null); loadCampList(); }, 1200);
+  } catch(e) {
+    alert('저장 중 오류가 발생했어요: ' + e.message);
+    console.error(e);
+  }
+}
+
+async function loadCampList() {
+  try {
+    const camps = await sbGet('campaigns', 'order=created_at.desc');
+    if (!camps || !camps.length) return;
+    const tbody = document.querySelector('#p-camp-list .data-table tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    camps.forEach(c => {
+      const applyDate = c.apply_deadline ? new Date(c.apply_deadline).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+      const reviewDate = c.review_deadline ? new Date(c.review_deadline).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+      const statusMap = {active:'<span class="badge b-active">진행중</span>',draft:'<span class="badge b-draft">임시저장</span>',closed:'<span class="badge b-end">종료</span>'};
+      const badge = statusMap[c.status] || statusMap.draft;
+      const actions = c.status==='active'
+        ? `<div class="action-btns">
+            <button class="btn btn-primary btn-sm" onclick="openCampDetail('${c.title}','${applyDate}','진행중')">📊 상세</button>
+            <button class="btn btn-outline btn-sm" onclick="editCamp('${c.id}','${c.title}')">수정</button>
+            <button class="btn btn-outline btn-sm" style="color:var(--red);" onclick="closeCamp('${c.id}')">마감</button>
+           </div>`
+        : `<div class="action-btns">
+            <button class="btn btn-primary btn-sm" onclick="activateCamp('${c.id}')">오픈</button>
+           </div>`;
+      tbody.innerHTML += `<tr><td class="fw">${c.title}</td><td>${applyDate}</td><td>${reviewDate}</td><td>-</td><td>${badge}</td><td>${actions}</td></tr>`;
+    });
+  } catch(e) { console.error('캠페인 목록 로드 실패', e); }
+}
+
+// 서포터즈 수정 모달
+function openEdit(name, score, status, memo) {
+  document.getElementById('edit-title').textContent = name + ' 정보 수정';
+  document.getElementById('edit-score').value = score;
+  document.getElementById('edit-status').value = status;
+  document.getElementById('edit-memo').value = memo;
+  document.getElementById('modal-edit').classList.add('show');
+}
+
+// 페이백 상태 변경
+function changeStatus(btn, newStatus) {
+  const row = btn.closest('tr');
+  row.dataset.status = newStatus;
+  const statusCell = row.querySelector('td:nth-last-child(2)');
+  const actionCell = row.querySelector('td:last-child');
+  const badges = {
+    '기안완료': '<span class="badge b-blue">기안 완료</span>',
+    '입금대기': '<span class="badge b-wait" style="background:#FFF3E0;color:#E65100;">입금 대기</span>',
+    '입금완료': '<span class="badge b-done">입금 완료</span>'
+  };
+  const actions = {
+    '기안완료': `<div class="action-btns"><button class="btn btn-outline btn-sm" onclick="changeStatus(this,'입금대기')">입금 대기로</button></div>`,
+    '입금대기': `<div class="action-btns"><button class="btn btn-green btn-sm" onclick="changeStatus(this,'입금완료')">입금 완료</button></div>`,
+    '입금완료': `<div class="action-btns"><button class="btn btn-outline btn-sm" style="color:var(--g500);" onclick="showToast('영수증 기능 — 추후 업데이트')">영수증</button></div>`
+  };
+  statusCell.innerHTML = badges[newStatus] || '';
+  actionCell.innerHTML = actions[newStatus] || '';
+  // 기안 대기 아닌 상태면 체크박스 비활성
+  const cb = row.querySelector('.row-cb');
+  if (cb) cb.disabled = newStatus !== '기안대기';
+  updateSelection();
+  showToast(newStatus + ' 처리됐어요!');
+}
+
+// 체크박스 전체 선택
+function toggleAll(cb) {
+  document.querySelectorAll('.row-cb:not(:disabled)').forEach(c => c.checked = cb.checked);
+  updateSelection();
+}
+
+function updateSelection() {
+  const checked = document.querySelectorAll('.row-cb:checked');
+  const bar = document.getElementById('excel-bar');
+  document.getElementById('selected-count').textContent = checked.length;
+  bar.classList.toggle('show', checked.length > 0);
+  // 전체 체크박스 상태 동기화
+  const all = document.querySelectorAll('.row-cb:not(:disabled)');
+  document.getElementById('cb-all').checked = all.length > 0 && [...all].every(c => c.checked);
+}
+
+function clearSelection() {
+  document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+  document.getElementById('cb-all').checked = false;
+  updateSelection();
+}
+
+// 엑셀 다운로드
+function downloadExcel() {
+  const checked = document.querySelectorAll('.row-cb:checked');
+  if (checked.length === 0) return;
+  const rows = [['이름','전화번호','구매채널','제품명','금액(원)','은행','계좌번호','예금주','입금예정일']];
+  checked.forEach(cb => {
+    const row = cb.closest('tr');
+    const d = row.dataset;
+    rows.push([d.name, d.phone, d.channel, d.product, d.amount, d.bank, d.account, d.holder, d.duedate]);
+  });
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  // 컬럼 너비
+  ws['!cols'] = [{wch:10},{wch:14},{wch:10},{wch:28},{wch:10},{wch:12},{wch:18},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws, '기안용_페이백');
+  const today = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `OZKIZ_기안용_페이백_${today}.xlsx`);
+  showToast('엑셀 파일이 다운로드됐어요!');
+}
+
+// 필터
+function filterPayback(status) {
+  document.querySelectorAll('#payback-tbody tr').forEach(row => {
+    row.style.display = (!status || row.dataset.status === status) ? '' : 'none';
+  });
+}
+
+// 토스트
+
+const SB_URL='https://myzsswresucgoeaiphpv.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15enNzd3Jlc3VjZ29lYWlwaHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDExMTMsImV4cCI6MjA5MTY3NzExM30.-niAnq7DdIEmef0EX_QZ16tHpUGA0K6YpnOplFey1-k';
+
+async function sbPost(table, data){
+  const res = await fetch(SB_URL+'/rest/v1/'+table, {
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+    body: JSON.stringify(data)
+  });
+  return await res.json();
+}
+
+async function sbGet(table, params=''){
+  const res = await fetch(SB_URL+'/rest/v1/'+table+'?'+params, {
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+  });
+  return await res.json();
+}
+
+
+
+// 실시간 미리보기 업데이트
+function updateLivePreview() {
+  const title = document.getElementById('camp-name')?.value.trim() || '캠페인 이름을 입력해주세요';
+  const applyEl = document.querySelectorAll('#p-camp-new input[type="datetime-local"]')[0];
+  const reviewEl = document.querySelectorAll('#p-camp-new input[type="datetime-local"]')[1];
+
+  // 제목
+  const titleEl = document.getElementById('prev-title-inline');
+  const campnameEl = document.getElementById('prev-campname-inline');
+  if (titleEl) titleEl.textContent = title;
+  if (campnameEl) campnameEl.textContent = title;
+
+  // 날짜
+  const applyEl2 = document.getElementById('prev-apply-inline');
+  const reviewEl2 = document.getElementById('prev-review-inline');
+  if (applyEl2) applyEl2.textContent = applyEl && applyEl.value
+    ? new Date(applyEl.value).toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit'}) + ' ' + new Date(applyEl.value).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+    : '-';
+  if (reviewEl2) reviewEl2.textContent = reviewEl && reviewEl.value
+    ? new Date(reviewEl.value).toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit'}) + ' ' + new Date(reviewEl.value).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+    : '-';
+
+  // 제품 목록
+  const prods = document.querySelectorAll('.prod-section');
+  let html = '';
+  prods.forEach((sec) => {
+    const inputs = sec.querySelectorAll('input');
+    const nameEl = inputs[0];
+    const chEl = sec.querySelector('select');
+    const thumbInput = inputs[1];
+    const name = nameEl ? nameEl.value.trim() : '';
+    if (!name) return;
+    const channel = chEl ? chEl.value : '자사몰';
+    const thumb = thumbInput ? thumbInput.value.trim() : '';
+    html += `
+    <div style="background:#fff;border:1.5px solid #EEE;border-radius:10px;overflow:hidden;">
+      <div style="height:60px;background:#F5F5F5;position:relative;overflow:hidden;">
+        ${thumb ? `<img src="${thumb}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.background='#F5F5F5'">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#BDBDBD;">이미지 없음</div>'}
+        <div style="position:absolute;top:5px;left:6px;background:rgba(255,255,255,.9);border-radius:5px;padding:2px 6px;font-size:9px;font-weight:700;color:#424242;">${channel}</div>
+      </div>
+      <div style="padding:7px 10px;">
+        <div style="font-size:11px;font-weight:700;color:#111;margin-bottom:2px;">${name}</div>
+        <div style="font-size:10px;color:#9E9E9E;">구매 후 <strong style="color:#E24B4A;">전액 환급</strong></div>
+      </div>
+    </div>`;
+  });
+  const prodContainer = document.getElementById('prev-products-inline');
+  if (prodContainer) {
+    prodContainer.innerHTML = html || '<div style="text-align:center;padding:14px;color:#BDBDBD;font-size:11px;">제품을 등록하면 여기에 표시돼요</div>';
+  }
+}
+
+// 입력 감지 — 실시간 반영
+document.addEventListener('input', function(e) {
+  const page = document.getElementById('p-camp-new');
+  if (page && page.contains(e.target)) updateLivePreview();
+});
+document.addEventListener('change', function(e) {
+  const page = document.getElementById('p-camp-new');
+  if (page && page.contains(e.target)) updateLivePreview();
+});
+
+function showPreview() {
+  const title = document.getElementById('camp-name').value.trim() || '(캠페인 이름 없음)';
+  const applyEl = document.querySelectorAll('#p-camp-new input[type="datetime-local"]')[0];
+  const reviewEl = document.querySelectorAll('#p-camp-new input[type="datetime-local"]')[1];
+  document.getElementById('prev-title').textContent = title;
+  document.getElementById('prev-camp-name').textContent = title;
+  document.getElementById('prev-apply').textContent = applyEl && applyEl.value
+    ? new Date(applyEl.value).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})
+    : '-';
+  document.getElementById('prev-review').textContent = reviewEl && reviewEl.value
+    ? new Date(reviewEl.value).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})
+    : '-';
+
+  // 제품 미리보기
+  const prods = document.querySelectorAll('.prod-section');
+  let html = '';
+  prods.forEach((sec, i) => {
+    const nameEl = sec.querySelector('input[type=text], input:not([type])');
+    const chEl = sec.querySelector('select');
+    const thumbEl = sec.querySelectorAll('input')[1];
+    const urlEl = sec.querySelectorAll('input')[2];
+    const name = nameEl ? nameEl.value.trim() : '';
+    if (!name) return;
+    const channel = chEl ? chEl.value : '자사몰';
+    const thumb = thumbEl ? thumbEl.value.trim() : '';
+    const url = urlEl ? urlEl.value.trim() : '';
+    html += `
+    <div style="background:#fff;border:1.5px solid #EEE;border-radius:12px;overflow:hidden;">
+      <div style="height:80px;background:#F5F5F5;position:relative;overflow:hidden;">
+        ${thumb ? `<img src="${thumb}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#CCC;font-size:12px;">이미지 없음</div>'}
+        <div style="position:absolute;top:7px;left:8px;background:rgba(255,255,255,.9);border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700;color:#424242;">${channel}</div>
+      </div>
+      <div style="padding:9px 12px;">
+        <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:4px;">${name}</div>
+        <div style="font-size:11px;color:#9E9E9E;">구매 후 <strong style="color:#E24B4A;">전액 환급</strong></div>
+        ${url ? `<div style="margin-top:6px;"><a href="${url}" target="_blank" style="font-size:11px;color:#1565C0;">구매 링크 확인 ↗</a></div>` : ''}
+      </div>
+    </div>`;
+  });
+  document.getElementById('prev-products').innerHTML = html || '<div style="text-align:center;padding:16px;color:#CCC;font-size:12px;">등록된 제품이 없어요</div>';
+  document.getElementById('modal-preview').classList.add('show');
+}
+
+
+// 서포터즈 검색
+
+// 서포터즈 상태 기준
+const STATUS_GUIDE = {
+  '활성':   { badge:'b-active',  label:'활성',  desc:'로그인 이력 있음 · 정상 활동 중' },
+  '주의':   { badge:'b-caution', label:'주의',  desc:'노쇼 1회↑ 또는 후기 미이행' },
+  '정지':   { badge:'b-stop',    label:'정지',  desc:'일시정지 · 주의 2회 누적 자동 적용' },
+  '비활성': { badge:'b-inactive',label:'비활성',desc:'등록됨 · 아직 접속 이력 없음' }
+};
+
+function addSupporterManual() {
+  // 추가 시 기본 상태 = 비활성 (아직 접속 안 한 상태)
+  showToast('서포터즈가 추가됐어요! (기본 상태: 비활성)');
+  document.getElementById('modal-add').classList.remove('show');
+}
+
+// 주의 2회 누적 → 정지 자동 적용 체크
+function checkAutoStop(cautionCount, currentStatus) {
+  if (cautionCount >= 2 && currentStatus !== '정지') {
+    return '정지';
+  }
+  return currentStatus;
+}
+
+
+// 캠페인 상세 페이지 열기
+function openCampDetail(name, period, status) {
+  document.getElementById('detail-camp-name').textContent = name;
+  document.getElementById('detail-camp-period').textContent = period;
+  const statusEl = document.getElementById('detail-status');
+  statusEl.textContent = status;
+  statusEl.className = 'badge ' + (status==='진행중' ? 'b-active' : status==='종료' ? 'b-end' : 'b-draft');
+  goPage('p-camp-detail', null);
+  // 사이드바 캠페인 목록 활성화
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector('[onclick*="p-camp-list"]')?.classList.add('active');
+}
+
+// 선정자/미선정자 탭 전환
+function switchDetailTab(tab) {
+  document.getElementById('detail-selected').style.display = tab==='selected' ? 'block' : 'none';
+  document.getElementById('detail-unselected').style.display = tab==='unselected' ? 'block' : 'none';
+  document.getElementById('tab-selected').style.cssText = tab==='selected'
+    ? 'padding:12px 16px;font-size:13px;font-weight:600;color:var(--red);cursor:pointer;border-bottom:2px solid var(--red);margin-bottom:-1px;'
+    : 'padding:12px 16px;font-size:13px;font-weight:600;color:var(--g500);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;';
+  document.getElementById('tab-unselected').style.cssText = tab==='unselected'
+    ? 'padding:12px 16px;font-size:13px;font-weight:600;color:var(--red);cursor:pointer;border-bottom:2px solid var(--red);margin-bottom:-1px;'
+    : 'padding:12px 16px;font-size:13px;font-weight:600;color:var(--g500);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;';
+}
+
+function searchSupporters() {
+  const keyword = (document.getElementById('sup-search').value || '').toLowerCase();
+  const status = document.querySelector('#p-supporters .filter-select').value;
+  document.querySelectorAll('#p-supporters .data-table tbody tr').forEach(row => {
+    const name = row.cells[0]?.textContent.toLowerCase() || '';
+    const phone = row.cells[1]?.textContent.toLowerCase() || '';
+    const rowStatus = row.cells[5]?.textContent.trim() || '';
+    const matchKeyword = !keyword || name.includes(keyword) || phone.includes(keyword);
+    const matchStatus = !status || rowStatus.includes(status);
+    row.style.display = (matchKeyword && matchStatus) ? '' : 'none';
+  });
+}
+
+// 추가 메뉴 토글
+function toggleAddMenu() {
+  const menu = document.getElementById('add-menu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#add-menu-btn') && !e.target.closest('#add-menu')) {
+    const m = document.getElementById('add-menu');
+    if (m) m.style.display = 'none';
+  }
+});
+
+// 엑셀 양식 다운로드
+function downloadTemplate() {
+  if (typeof XLSX === 'undefined') { showToast('잠시 후 다시 시도해주세요'); return; }
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['이름','전화번호','인스타그램','블로그','기타SNS','메모'],
+    ['홍길동','010-1234-5678','https://instagram.com/example','https://blog.naver.com/example','','VIP 서포터즈']
+  ]);
+  ws['!cols'] = [{wch:10},{wch:14},{wch:30},{wch:30},{wch:25},{wch:20}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '서포터즈_업로드양식');
+  XLSX.writeFile(wb, 'OZKIZ_서포터즈_업로드양식.xlsx');
+  showToast('양식이 다운로드됐어요!');
+}
+
+let excelData = [];
+
+function handleExcelDrop(e) {
+  e.preventDefault();
+  document.getElementById('excel-drop-zone').style.borderColor = 'var(--g300)';
+  const file = e.dataTransfer.files[0];
+  if (file) handleExcelFile(file);
+}
+
+function handleExcelFile(file) {
+  if (!file) return;
+  if (typeof XLSX === 'undefined') { showToast('잠시 후 다시 시도해주세요'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const wb = XLSX.read(e.target.result, {type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+    // 첫 행 헤더 제거
+    excelData = rows.slice(1).filter(r => r[0] && r[1]);
+    renderExcelPreview();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderExcelPreview() {
+  const tbody = document.getElementById('excel-preview-body');
+  tbody.innerHTML = '';
+  excelData.forEach(r => {
+    tbody.innerHTML += `<tr>
+      <td class="fw">${r[0]||''}</td>
+      <td style="font-size:11px;">${r[1]||''}</td>
+      <td style="font-size:11px;color:#1565C0;">${r[2]?'링크있음':'-'}</td>
+      <td style="font-size:11px;color:#1565C0;">${r[3]?'링크있음':'-'}</td>
+      <td style="font-size:11px;color:var(--g500);">${r[5]||'-'}</td>
+    </tr>`;
+  });
+  document.getElementById('excel-count').textContent = excelData.length + '명 인식됨';
+  document.getElementById('excel-preview').style.display = 'block';
+  const btn = document.getElementById('excel-upload-btn');
+  btn.disabled = excelData.length === 0;
+  btn.style.opacity = excelData.length > 0 ? '1' : '.4';
+  btn.style.cursor = excelData.length > 0 ? 'pointer' : 'default';
+}
+
+function uploadExcelData() {
+  if (!excelData.length) return;
+  // 실제 DB 연동 전: 미리보기로 추가된 것처럼 처리
+  showToast('✅ ' + excelData.length + '명 업로드 완료! (DB 연동 후 실제 저장)');
+  document.getElementById('modal-excel').classList.remove('show');
+  resetExcel();
+}
+
+function resetExcel() {
+  excelData = [];
+  document.getElementById('excel-preview').style.display = 'none';
+  document.getElementById('excel-file-input').value = '';
+  const btn = document.getElementById('excel-upload-btn');
+  btn.disabled = true; btn.style.opacity = '.4';
+}
+
+
+// 후기 상태 변경
+function changeReviewStatus(btn, badgeClass, text) {
+  const row = btn.closest('tr');
+  const statusCell = row.querySelector('td:nth-last-child(2)');
+  statusCell.innerHTML = '<span class="badge ' + badgeClass + '">' + text + '</span>';
+}
+
+// 반려 모달
+let rejectTargetRow = null;
+function openRejectModal(btn) {
+  rejectTargetRow = btn.closest('tr');
+  document.getElementById('modal-reject').classList.add('show');
+}
+function submitReject() {
+  const reason = document.querySelector('input[name="reject-reason"]:checked');
+  if (!reason) { alert('반려 사유를 선택해주세요.'); return; }
+  if (rejectTargetRow) {
+    const statusCell = rejectTargetRow.querySelector('td:nth-last-child(2)');
+    statusCell.innerHTML = '<span class="badge b-resubmit">재제출 요청</span>';
+    // 재제출 횟수 +1
+    const countCell = rejectTargetRow.querySelector('td:nth-child(6)');
+    if (countCell) {
+      const cur = parseInt(countCell.textContent) || 0;
+      countCell.innerHTML = '<span style="color:var(--red);font-weight:700;">' + (cur+1) + '회</span>';
+    }
+  }
+  document.getElementById('modal-reject').classList.remove('show');
+  showToast('반려 처리됐어요. 재제출 요청이 발송됐어요!');
+}
+
+
+// 캠페인 수정
+async function editCamp(id, title) {
+  goPage('p-camp-new', null);
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector('[onclick*="p-camp-new"]')?.classList.add('active');
+  if (id === 'static') {
+    document.getElementById('camp-name').value = title;
+    updateLivePreview();
+    showToast('수정 모드 — 변경 후 저장해주세요');
+    return;
+  }
+  try {
+    const res = await fetch(SB_URL+'/rest/v1/campaigns?id=eq.'+id, {
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+    const data = await res.json();
+    if (!data || !data[0]) return;
+    const c = data[0];
+    document.getElementById('camp-name').value = c.title || '';
+    if (c.apply_deadline) document.getElementById('apply-dl').value = c.apply_deadline.slice(0,16);
+    if (c.review_deadline) document.getElementById('review-dl').value = c.review_deadline.slice(0,16);
+    updateLivePreview();
+    showToast('캠페인 정보를 불러왔어요. 수정 후 저장해주세요.');
+  } catch(e) { showToast('불러오기 실패'); }
+}
+
+// 캠페인 마감
+async function closeCamp(id) {
+  if (!confirm('이 캠페인을 마감하시겠어요?')) return;
+  try {
+    await fetch(SB_URL+'/rest/v1/campaigns?id=eq.'+id, {
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+      body: JSON.stringify({status:'closed'})
+    });
+    showToast('캠페인이 마감됐어요.');
+    setTimeout(loadCampList, 800);
+  } catch(e) { showToast('마감 처리 실패'); }
+}
+
+// 캠페인 오픈
+async function activateCamp(id) {
+  if (!confirm('이 캠페인을 오픈하시겠어요?')) return;
+  try {
+    await fetch(SB_URL+'/rest/v1/campaigns?id=eq.'+id, {
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+      body: JSON.stringify({status:'active'})
+    });
+    showToast('캠페인이 오픈됐어요! 🚀');
+    setTimeout(loadCampList, 800);
+  } catch(e) { showToast('오픈 처리 실패'); }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+
+// 비밀번호 보호
+(function(){
+  const CORRECT = 'no1openhan@@';
+  const KEY = 'ozkiz_admin_auth';
+  if(sessionStorage.getItem(KEY) === '1'){
+    document.getElementById('lock-screen').style.display='none';
+    return;
+  }
+  window.checkPw = function(){
+    const val = document.getElementById('pw-input').value;
+    if(val === CORRECT){
+      sessionStorage.setItem(KEY,'1');
+      document.getElementById('lock-screen').style.display='none';
+    } else {
+      document.getElementById('pw-error').textContent='비밀번호가 올바르지 않아요';
+      document.getElementById('pw-input').value='';
+      document.getElementById('pw-input').focus();
+    }
+  };
+})();
+
+// ===== 대시보드 스크립트 =====
+let calYear = 2025, calMonth = 3; // 0-indexed: 3 = 4월
+const calEvents = {
+  '2025-4-15': [{color:'#E24B4A',label:'신청마감'}],
+  '2025-4-22': [{color:'#1565C0',label:'후기마감'},{color:'#E24B4A',label:'신청마감'}],
+  '2025-4-26': [{color:'#2E7D32',label:'페이백'}],
+  '2025-4-27': [{color:'#2E7D32',label:'페이백'}],
+  '2025-4-28': [{color:'#2E7D32',label:'페이백'}],
+  '2025-4-30': [{color:'#1565C0',label:'후기마감'}]
+};
+
+const periodData = {
+  '이번달': {camp:1,campSub:'전체 3개 중',prod:8,prodSub:'이번 달 3개',sup:24,supSub:'활성 21명',review:5,reviewSub:'승인 완료 12건',payback:3,paybackSub:'95,000원',ch:[8,6,4,3,2]},
+  '지난달': {camp:1,campSub:'겨울 패딩 종료',prod:5,prodSub:'1개 캠페인',sup:24,supSub:'활성 22명',review:0,reviewSub:'모두 완료',payback:1,paybackSub:'58,000원',ch:[5,3,2,1,0]},
+  '3개월': {camp:2,campSub:'진행+종료',prod:13,prodSub:'2개 캠페인',sup:24,supSub:'활성 21명',review:5,reviewSub:'승인 완료 24건',payback:4,paybackSub:'153,000원',ch:[13,9,6,4,2]},
+  '전체': {camp:3,campSub:'전체 캠페인',prod:23,prodSub:'전체 누적',sup:24,supSub:'활성 21명',review:5,reviewSub:'승인 완료 36건',payback:4,paybackSub:'153,000원',ch:[18,12,8,6,4]}
+};
+const periodLabels = {
+  '이번달':'2025년 4월 1일 ~ 4월 30일 기준',
+  '지난달':'2025년 3월 1일 ~ 3월 31일 기준',
+  '3개월':'2025년 2월 1일 ~ 4월 30일 기준',
+  '전체':'전체 기간 기준'
+};
+
+let chartInst = null;
+
+function setPeriod(p, btn) {
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const d = periodData[p];
+  document.getElementById('d-camp').textContent = d.camp;
+  document.getElementById('d-camp-sub').textContent = d.campSub;
+  document.getElementById('d-prod').textContent = d.prod;
+  document.getElementById('d-prod-sub').textContent = d.prodSub;
+  document.getElementById('d-sup').textContent = d.sup;
+  document.getElementById('d-sup-sub').textContent = d.supSub;
+  document.getElementById('d-review').textContent = d.review;
+  document.getElementById('d-review-sub').textContent = d.reviewSub;
+  document.getElementById('d-payback').textContent = d.payback;
+  document.getElementById('d-payback-sub').textContent = d.paybackSub;
+  document.getElementById('period-label').textContent = periodLabels[p];
+  document.getElementById('ch-period-label').textContent = periodLabels[p].split(' 기준')[0];
+  if (chartInst) {
+    chartInst.data.datasets[0].data = [d.ch[0],0,0,0,0];
+    chartInst.data.datasets[1].data = [0,d.ch[1],d.ch[2],d.ch[3],d.ch[4]];
+    chartInst.update();
+  }
+  // 날짜 범위도 업데이트
+  const ranges = {
+    '이번달':['2025-04-01','2025-04-30'],
+    '지난달':['2025-03-01','2025-03-31'],
+    '3개월':['2025-02-01','2025-04-30'],
+    '전체':['2025-01-01','2025-04-30']
+  };
+  document.getElementById('date-from').value = ranges[p][0];
+  document.getElementById('date-to').value = ranges[p][1];
+}
+
+function applyFilter() {
+  const from = document.getElementById('date-from').value;
+  const to = document.getElementById('date-to').value;
+  if (!from || !to) return;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('on'));
+  const f = new Date(from), t = new Date(to);
+  const months = Math.round((t-f)/(1000*60*60*24*30));
+  let label = from + ' ~ ' + to + ' 기준';
+  document.getElementById('period-label').textContent = label;
+  document.getElementById('ch-period-label').textContent = from + ' ~ ' + to;
+  showToast('기간 조회: ' + from + ' ~ ' + to);
+}
+
+function renderCalendar() {
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('cal-title').textContent = (calYear) + '년 ' + monthNames[calMonth] + ' 캘린더';
+  const cal = document.getElementById('cal-body');
+  cal.innerHTML = '';
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+  const isToday = (d) => today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+  for (let i=0;i<firstDay;i++) {
+    const e=document.createElement('div'); cal.appendChild(e);
+  }
+  for (let d=1;d<=daysInMonth;d++) {
+    const key = calYear+'-'+(calMonth+1)+'-'+d;
+    const ev = calEvents[key];
+    const div = document.createElement('div');
+    div.style.cssText = 'text-align:center;padding:4px 2px;border-radius:6px;min-height:38px;display:flex;flex-direction:column;align-items:center;gap:2px;'+(isToday(d)?'background:#FFEBEB;':'');
+    div.innerHTML = '<span style="font-size:11px;color:'+(isToday(d)?'#E24B4A;font-weight:800':'#424242')+';">' + d + '</span>';
+    if (ev) {
+      const dots = document.createElement('div');
+      dots.style.cssText='display:flex;gap:2px;';
+      ev.forEach(e=>{
+        const dot=document.createElement('div');
+        dot.style.cssText='width:5px;height:5px;border-radius:50%;background:'+e.color+';';
+        dots.appendChild(dot);
+      });
+      div.appendChild(dots);
+    }
+    cal.appendChild(div);
+  }
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth=11; calYear--; }
+  if (calMonth > 11) { calMonth=0; calYear++; }
+  renderCalendar();
+}
+
+// Chart.js 초기화
+window.addEventListener('load', function() {
+  // 초기 제품 1개 생성
+  if (document.getElementById('prod-list')) addProd();
+  // 캘린더 렌더링
+  if (typeof renderCalendar === 'function') renderCalendar();
+  if (typeof Chart !== 'undefined') {
+    const ctx = document.getElementById('channelChart');
+    if (ctx) {
+      chartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['자사몰','쿠팡','네이버','무신사','보리보리'],
+          datasets: [
+            {label:'자사몰',data:[8,0,0,0,0],backgroundColor:'#212121'},
+            {label:'외부몰',data:[0,6,4,3,2],backgroundColor:'#9E9E9E'}
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{grid:{display:false},ticks:{font:{size:11}}},
+            y:{grid:{color:'#F5F5F5'},ticks:{font:{size:11},stepSize:2},beginAtZero:true}
+          }
+        }
+      });
+    }
+  }
+  renderCalendar();
+});
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</body>
+</html><div class="page" id="p-camp-new" style="position:fixed;top:0;left:var(--side);right:0;bottom:0;flex-direction:row;padding-bottom:0;overflow:hidden;">
+
+  <!-- 왼쪽: 등록 폼 (전체 너비 활용) -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;background:#fff;">
+    <div style="background:#fff;border-bottom:1px solid var(--g200);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-shrink:0;">
+      <div style="font-size:15px;font-weight:700;color:var(--g800);">새 캠페인 등록</div>
+      <div></div>
+    </div>
+    <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px;">
+
+      <!-- 기본 정보 -->
+      <div class="panel">
+        <div class="panel-header"><div><div class="panel-title">기본 정보</div></div></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="form-group form-full">
+              <label class="form-label">캠페인 이름 <span class="req">*</span></label>
+              <input class="form-input" placeholder="예: 2025 봄 신상 체험단" id="camp-name" oninput="updateLivePreview()">
+            </div>
+            <div class="form-group form-full">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <label class="form-label">신청 마감일 <span class="req">*</span></label>
+                  <input class="form-input" type="datetime-local" id="apply-dl" onchange="updateLivePreview()" style="width:100%;min-width:0;">
+                </div>
+                <div>
+                  <label class="form-label">후기 마감일 <span class="req">*</span></label>
+                  <input class="form-input" type="datetime-local" id="review-dl" onchange="updateLivePreview()" style="width:100%;min-width:0;">
+                </div>
+              </div>
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label">캠페인 설명</label>
+              <textarea class="form-textarea" placeholder="서포터즈에게 표시될 설명" oninput="updateLivePreview()">구매금액 전액 환급 · 후기 확인 후 7일 이내 페이백</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 신청 윈도우 -->
+      <div class="panel">
+        <div class="panel-header"><div><div class="panel-title">신청 윈도우 설정</div></div></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">신청 윈도우 시간</label>
+              <div class="time-group" id="wg">
+                <button class="time-btn" onclick="setT('wg',this)">1시간</button>
+                <button class="time-btn on" onclick="setT('wg',this)">3시간</button>
+                <button class="time-btn" onclick="setT('wg',this)">6시간</button>
+                <button class="time-btn" onclick="setT('wg',this)">12시간</button>
+              </div>
+              <div class="form-hint">마감 후 점수 순 자동 배정</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">배정 후 구매 마감</label>
+              <div class="time-group" id="bg">
+                <button class="time-btn" onclick="setT('bg',this)">2시간</button>
+                <button class="time-btn" onclick="setT('bg',this)">4시간</button>
+                <button class="time-btn on" onclick="setT('bg',this)">6시간</button>
+                <button class="time-btn" onclick="setT('bg',this)">12시간</button>
+              </div>
+              <div class="form-hint">초과 시 대기자에게 자동 이전</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">동점 처리</label>
+              <select class="form-select"><option>신청 시각 빠른 순</option><option>랜덤 추첨</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">결과 발표</label>
+              <select class="form-select"><option>즉시 자동 발표</option><option>마감 후 1시간</option><option>마감 후 2시간</option><option>익일 오전 10시</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">인당 최대 제품 수</label>
+              <select class="form-select"><option>1개</option><option selected>2개</option><option>3개</option><option>제한 없음</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">대기자 자동 알림</label>
+              <select class="form-select"><option selected>켜짐</option><option>꺼짐</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 제품 등록 -->
+      <div class="panel">
+        <div class="panel-header">
+          <div><div class="panel-title">제품 등록</div><div class="panel-sub">썸네일과 구매 링크를 포함해서 등록해주세요</div></div>
+        </div>
+        <div class="panel-body">
+          <div id="prod-list"></div>
+          <button class="add-prod-btn" onclick="addProd()" id="add-prod-btn">+ 제품 추가</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 하단 고정 저장 바 -->
+    <div style="background:#fff;border-top:1px solid var(--g200);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0;z-index:50;flex-shrink:0;">
+      <div style="font-size:11px;color:var(--g500);">* 오픈 전까지 수정 가능해요</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" onclick="showToast('임시저장 완료!')">임시저장</button>
+        <button class="btn btn-primary" style="padding:8px 20px;" onclick="openCamp()">🚀 캠페인 오픈하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 오른쪽: 실시간 미리보기 -->
+  <div style="width:260px;flex-shrink:0;border-left:1px solid var(--g200);background:#F7F7F8;display:flex;flex-direction:column;overflow-y:auto;">
+    <div style="padding:12px 14px;border-bottom:1px solid var(--g200);background:#fff;flex-shrink:0;">
+      <div style="font-size:12px;font-weight:700;color:var(--g800);">📱 앱 미리보기</div>
+      <div style="font-size:10px;color:var(--g500);margin-top:1px;">입력 시 실시간 반영</div>
+    </div>
+    <div style="padding:12px;">
+      <div style="background:#fff;border-radius:16px;border:1px solid var(--g200);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+        <div style="background:#E24B4A;padding:10px 12px 12px;">
+          <div style="font-size:9px;color:rgba(255,255,255,.8);margin-bottom:2px;">진행 중인 캠페인</div>
+          <div style="font-size:12px;font-weight:800;color:#fff;word-break:break-all;" id="prev-title-inline">캠페인 이름을 입력해주세요</div>
+        </div>
+        <div style="padding:10px;display:flex;flex-direction:column;gap:7px;">
+          <div style="background:#fff;border:1px solid #EEE;border-radius:9px;padding:8px 10px;">
+            <div style="font-size:10px;font-weight:700;color:#111;margin-bottom:4px;" id="prev-campname-inline">캠페인명</div>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <div style="display:flex;align-items:center;gap:5px;font-size:9px;">
+                <div style="width:4px;height:4px;border-radius:50%;background:#E24B4A;flex-shrink:0;"></div>
+                <span style="color:#9E9E9E;min-width:32px;">신청 마감</span>
+                <span style="font-weight:700;color:#E24B4A;" id="prev-apply-inline">-</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:9px;">
+                <div style="width:4px;height:4px;border-radius:50%;background:#1565C0;flex-shrink:0;"></div>
+                <span style="color:#9E9E9E;min-width:32px;">후기 마감</span>
+                <span style="font-weight:700;color:#1565C0;" id="prev-review-inline">-</span>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:9px;font-weight:700;color:#9E9E9E;">제품 선택</div>
+          <div id="prev-products-inline" style="display:flex;flex-direction:column;gap:5px;">
+            <div style="text-align:center;padding:10px;color:#BDBDBD;font-size:9px;background:#F9F9F9;border-radius:7px;">제품을 등록하면 표시돼요</div>
+          </div>
+          <div style="background:#E0E0E0;border-radius:8px;padding:9px;text-align:center;font-size:10px;font-weight:700;color:#fff;">신청하기</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
